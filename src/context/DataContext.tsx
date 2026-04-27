@@ -1,0 +1,57 @@
+import React, { createContext, useContext, useState, useMemo } from 'react';
+import { Registro, Filtros, Estadisticas, DataStatus } from '../types';
+import { calcularEstadisticas, filtrarRegistros } from '../utils/statistics';
+import { useSheetData } from '../hooks/useSheetData';
+
+const FILTROS_DEFAULT: Filtros = {
+  especialidad: '', procedencia: '', situacion_calle: '',
+  cobertura_medica: '', genero: '', hora_desde: 0, hora_hasta: 23,
+  localidad: '', search: '',
+};
+
+interface DataContextValue {
+  rawData: Registro[];
+  filteredData: Registro[];
+  stats: Estadisticas;
+  filtros: Filtros;
+  setFiltros: React.Dispatch<React.SetStateAction<Filtros>>;
+  resetFiltros: () => void;
+  status: DataStatus;
+  lastUpdate: Date | null;
+  error: string | null;
+  usingMock: boolean;
+  customUrl: string;
+  saveCustomUrl: (url: string) => void;
+  refresh: () => void;
+  presentationMode: boolean;
+  setPresentationMode: (v: boolean) => void;
+}
+
+const DataContext = createContext<DataContextValue | null>(null);
+
+export function DataProvider({ children }: { children: React.ReactNode }) {
+  const { data, status, lastUpdate, error, usingMock, customUrl, saveCustomUrl, refresh } = useSheetData();
+  const [filtros, setFiltros] = useState<Filtros>(FILTROS_DEFAULT);
+  const [presentationMode, setPresentationMode] = useState(false);
+
+  const filteredData = useMemo(() => filtrarRegistros(data, filtros), [data, filtros]);
+  const stats = useMemo(() => calcularEstadisticas(filteredData), [filteredData]);
+
+  const resetFiltros = () => setFiltros(FILTROS_DEFAULT);
+
+  return (
+    <DataContext.Provider value={{
+      rawData: data, filteredData, stats, filtros, setFiltros, resetFiltros,
+      status, lastUpdate, error, usingMock, customUrl, saveCustomUrl, refresh,
+      presentationMode, setPresentationMode,
+    }}>
+      {children}
+    </DataContext.Provider>
+  );
+}
+
+export function useData() {
+  const ctx = useContext(DataContext);
+  if (!ctx) throw new Error('useData must be used inside DataProvider');
+  return ctx;
+}
