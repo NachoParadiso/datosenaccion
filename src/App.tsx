@@ -3,13 +3,13 @@ import { AnimatePresence } from 'framer-motion';
 import { DataProvider } from './context/DataContext';
 import Header from './components/layout/Header';
 import DashboardHome from './pages/DashboardHome';
-import SpecialtyDetail from './components/specialty/SpecialtyDetail';
 import PresentationMode from './components/presentation/PresentationMode';
 import { useData } from './context/DataContext';
 
 function AppContent() {
   const { presentationMode } = useData();
   if (presentationMode) return <PresentationMode />;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -17,7 +17,6 @@ function AppContent() {
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<DashboardHome />} />
-            <Route path="/especialidad/:nombre" element={<SpecialtyDetail />} />
           </Routes>
         </AnimatePresence>
       </main>

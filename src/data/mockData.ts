@@ -21,52 +21,96 @@ const NOMBRES = [
   'Marcos Heredia', 'Claudia Salvatierra', 'Hugo Rivadeneira', 'Teresa Alanoca', 'Bruno Furlán',
 ];
 
-const ESPECIALIDADES = [
-  'Odontología','Odontología','Odontología','Odontología','Odontología',
-  'Clínica médica','Clínica médica','Clínica médica','Clínica médica',
-  'Pediatría','Pediatría','Pediatría',
-  'Ginecología','Ginecología','Ginecología',
-  'Salud mental','Salud mental',
-  'Enfermería','Enfermería',
-  'Oftalmología','Oftalmología',
-  'Nutrición','Nutrición',
-  'Trabajo social',
-  'Vacunación','Vacunación',
-  'Otra',
+const RANGO_ETARIO = [
+  '18 a 24 años','18 a 24 años',
+  '25 a 34 años','25 a 34 años','25 a 34 años','25 a 34 años',
+  '35 a 44 años','35 a 44 años','35 a 44 años','35 a 44 años',
+  '45 a 54 años','45 a 54 años','45 a 54 años',
+  '55 a 64 años','55 a 64 años',
+  '65 años o más','65 años o más',
 ];
 
-const PROCEDENCIAS = [
-  'CABA','CABA','CABA','CABA','CABA','CABA','CABA','CABA',
-  'Provincia de Buenos Aires','Provincia de Buenos Aires','Provincia de Buenos Aires','Provincia de Buenos Aires',
+const COBERTURA = [
+  'Obra social','Obra social','Obra social','Obra social',
+  'Prepaga','Prepaga','Prepaga',
+  'PAMI','PAMI',
+  'Solo salud pública / no tengo cobertura','Solo salud pública / no tengo cobertura','Solo salud pública / no tengo cobertura','Solo salud pública / no tengo cobertura','Solo salud pública / no tengo cobertura',
+  'Otro',
+];
+
+const RESIDENCIA = [
+  'CABA','CABA','CABA','CABA','CABA','CABA',
+  'Conurbano Bonaerense','Conurbano Bonaerense','Conurbano Bonaerense','Conurbano Bonaerense','Conurbano Bonaerense',
   'Otra provincia','Otra provincia',
-  'Otro país',
 ];
 
-const LOCALIDADES = [
-  'Villa del Parque','Flores','Palermo','Barracas','La Boca','Lugano','Mataderos',
-  'Pompeya','Liniers','Caballito','Villa Urquiza','Belgrano','Balvanera',
-  'Lanús','Quilmes','Lomas de Zamora','La Matanza','San Justo','Morón',
-  'Florencio Varela','Berazategui','Avellaneda','San Isidro','Tres de Febrero',
-  'Tigre','Merlo','Ituzaingó','Hurlingham','Marcos Paz',
-  'Córdoba Capital','Rosario','Mendoza','Tucumán',
-  'Bolivia','Paraguay','Venezuela','Perú','Brasil',
+const SITUACION_LABORAL = [
+  'Empleado/a en relación de dependencia','Empleado/a en relación de dependencia','Empleado/a en relación de dependencia',
+  'Trabajo informal / en negro','Trabajo informal / en negro','Trabajo informal / en negro','Trabajo informal / en negro',
+  'Monotributista / autónomo','Monotributista / autónomo',
+  'Desempleado/a (busco trabajo)','Desempleado/a (busco trabajo)','Desempleado/a (busco trabajo)',
+  'No trabajo ni busco trabajo','No trabajo ni busco trabajo',
 ];
 
-const MOTIVOS = [
-  'Control general', 'Dolor de cabeza', 'Revisión dental', 'Control de presión',
-  'Vacunación pendiente', 'Problema ocular', 'Dolor de muelas', 'Control de peso',
-  'Salud mental', 'Control pediátrico', 'Revisión ginecológica', 'Trabajo social',
-  'Dolor de espalda', 'Control de glucemia', 'Problema de piel', 'Asesoramiento nutricional',
-  'Consulta general', 'Seguimiento de tratamiento', 'Primera consulta',
+const IMPEDIMENTOS_OPS = [
+  'Supermercado','Supermercado','Supermercado','Supermercado','Supermercado',
+  'El alquiler','El alquiler','El alquiler','El alquiler',
+  'Los servicios (luz, gas, agua)','Los servicios (luz, gas, agua)','Los servicios (luz, gas, agua)',
+  'El transporte','El transporte',
+  'La salud y medicamentos','La salud y medicamentos',
+  'La educación / útiles','La educación / útiles',
+  'Las deudas o créditos','Las deudas o créditos',
+  'Llego a fin de mes sin problemas',
 ];
 
-const CALLE = ['No','No','No','No','No','No','No','No','No','Sí','Sí','Prefiere no responder'];
-const COBERTURA = ['No','No','No','No','No','Sí','Sí','Sí','No sabe / no responde'];
-const GENEROS = ['Femenino','Femenino','Femenino','Masculino','Masculino','Masculino','No binario','Prefiere no responder'];
-const PREVIO = ['No','No','Sí','No sabe'];
+const URGENCIAS_OPS = [
+  'Inflación y costo de vida','Inflación y costo de vida','Inflación y costo de vida','Inflación y costo de vida','Inflación y costo de vida',
+  'Empleo y salarios','Empleo y salarios','Empleo y salarios',
+  'Salud pública','Salud pública',
+  'Seguridad','Seguridad','Seguridad',
+  'Educación','Educación',
+  'Vivienda','Vivienda',
+  'Jubilaciones y pensiones',
+  'Corrupción e instituciones',
+  'Pobreza e indigencia','Pobreza e indigencia',
+];
 
 function rnd<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 function rndInt(min: number, max: number): number { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function genImpedimentos(): string[] {
+  const n = Math.random() < 0.15 ? 0 : rndInt(1, 4);
+  const selected: string[] = [];
+  const used = new Set<string>();
+  for (let i = 0; i < n; i++) {
+    let v: string;
+    let attempts = 0;
+    do {
+      v = rnd(IMPEDIMENTOS_OPS);
+      attempts++;
+    } while (used.has(v) && attempts < 10);
+    used.add(v);
+    selected.push(v);
+  }
+  return [...new Set(selected)];
+}
+
+function genUrgencias(): string[] {
+  const n = rndInt(1, 3);
+  const selected: string[] = [];
+  const used = new Set<string>();
+  for (let i = 0; i < n; i++) {
+    let v: string;
+    let attempts = 0;
+    do {
+      v = rnd(URGENCIAS_OPS);
+      attempts++;
+    } while (used.has(v) && attempts < 10);
+    used.add(v);
+    selected.push(v);
+  }
+  return [...new Set(selected)];
+}
 
 function genHora(): number {
   const weights = [0,0,0,0,0,0,1,3,8,12,14,12,10,8,8,7,7,5,4,3,2,2,2,1];
@@ -80,8 +124,7 @@ function genHora(): number {
 }
 
 function genFecha(hora: number): Date {
-  const d = new Date(2026, 3, 25, hora, rndInt(0, 59), rndInt(0, 59));
-  return d;
+  return new Date(2026, 3, 25, hora, rndInt(0, 59), rndInt(0, 59));
 }
 
 function formatTimestamp(d: Date): string {
@@ -102,30 +145,31 @@ export function generarMockData(n = 90): Registro[] {
   return Array.from({ length: n }, (_, i) => {
     const hora = genHora();
     const fecha = genFecha(hora);
-    const procedencia = rnd(PROCEDENCIAS);
-    const especialidad = rnd(ESPECIALIDADES);
-
-    const isNino = Math.random() < 0.12;
-    const edad = isNino ? rndInt(1, 12) : rndInt(18, 78);
 
     return {
       id: `mock-${i}`,
       marca_temporal: formatTimestamp(fecha),
       nombre_completo: rnd(NOMBRES),
       dni: genDni(),
-      telefono: Math.random() > 0.15 ? `11${rndInt(10_000_000, 99_999_999)}` : 'Sin teléfono',
-      procedencia,
-      localidad_barrio: rnd(LOCALIDADES),
-      situacion_calle: rnd(CALLE),
-      especialidad,
-      motivo_consulta: rnd(MOTIVOS),
-      edad,
-      genero: isNino && Math.random() > 0.5 ? 'Masculino' : rnd(GENEROS),
-      cobertura_medica: rnd(COBERTURA),
-      atendido_previamente: rnd(PREVIO),
+      telefono: '',
+      procedencia: '',
+      localidad_barrio: '',
+      situacion_calle: '',
+      especialidad: '',
+      motivo_consulta: '',
+      edad: null,
+      genero: '',
+      cobertura_medica: '',
+      atendido_previamente: '',
       observaciones: '',
       hora,
       fecha,
+      rango_etario: rnd(RANGO_ETARIO),
+      cobertura: rnd(COBERTURA),
+      residencia: rnd(RESIDENCIA),
+      situacion_laboral: rnd(SITUACION_LABORAL),
+      impedimentos: genImpedimentos(),
+      urgencias: genUrgencias(),
     };
   }).sort((a, b) => (b.fecha?.getTime() ?? 0) - (a.fecha?.getTime() ?? 0));
 }

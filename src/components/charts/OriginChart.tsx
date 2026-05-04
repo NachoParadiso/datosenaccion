@@ -3,9 +3,11 @@ import { KV } from '../../types';
 
 const COLORS: Record<string, string> = {
   'CABA': '#003087',
-  'Provincia de Buenos Aires': '#0077CC',
+  'Ciudad Autónoma de Buenos Aires': '#003087',
+  'Ciudad Autonoma de Buenos Aires': '#003087',
+  'Conurbano Bonaerense': '#0077CC',
+  'Conurbano': '#0077CC',
   'Otra provincia': '#00A8E8',
-  'Otro país': '#7DD3FC',
 };
 const FALLBACK = ['#003087','#0077CC','#00A8E8','#7DD3FC','#BAE6FD'];
 
@@ -18,7 +20,7 @@ function renderLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: Re
 
 interface Props { data: KV[]; title?: string; }
 
-export default function OriginChart({ data, title = 'Procedencia' }: Props) {
+export default function OriginChart({ data, title = 'Residencia' }: Props) {
   if (!data.length) return <div className="flex items-center justify-center h-48 text-slate-400 text-sm">Sin datos</div>;
   return (
     <div>

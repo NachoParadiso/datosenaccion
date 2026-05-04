@@ -3,11 +3,37 @@ import { Filter, X, Search, ChevronDown } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { clsx } from 'clsx';
 
-const ESPECIALIDADES = ['Odontología','Clínica médica','Pediatría','Ginecología','Salud mental','Enfermería','Oftalmología','Nutrición','Trabajo social','Vacunación','Otra'];
-const PROCEDENCIAS = ['CABA','Provincia de Buenos Aires','Otra provincia','Otro país'];
-const COBERTURAS = ['Sí','No','No sabe / no responde'];
-const GENEROS = ['Femenino','Masculino','No binario','Prefiere no responder','Otro'];
-const CALLE = ['Sí','No','Prefiere no responder'];
+const SITUACIONES_LABORALES = [
+  'Empleado/a en relación de dependencia',
+  'Trabajo informal / en negro',
+  'Monotributista / autónomo',
+  'Desempleado/a (busco trabajo)',
+  'No trabajo ni busco trabajo',
+];
+
+const RESIDENCIAS = [
+  'Ciudad Autónoma de Buenos Aires',
+  'Conurbano Bonaerense',
+  'Otra provincia',
+];
+
+const COBERTURAS = [
+  'Obra social',
+  'Prepaga',
+  'PAMI',
+  'Solo salud pública / no tengo cobertura',
+  'Otro',
+];
+
+const RANGOS_ETARIOS = [
+  'Menos de 18 años',
+  '18 a 24 años',
+  '25 a 34 años',
+  '35 a 44 años',
+  '45 a 54 años',
+  '55 a 64 años',
+  '65 años o más',
+];
 
 function SelectFilter({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   return (
@@ -33,7 +59,6 @@ export default function FiltersBar() {
     return Boolean(v);
   });
 
-  // Extract unique localidades from raw data
   const localidades = [...new Set(rawData.map((r) => r.localidad_barrio).filter(Boolean))].sort();
 
   return (
@@ -48,26 +73,23 @@ export default function FiltersBar() {
           Filtros
         </div>
 
-        {/* Search */}
         <div className="relative flex-1 min-w-48 max-w-sm">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={filtros.search}
             onChange={(e) => setFiltros((f) => ({ ...f, search: e.target.value }))}
-            placeholder="Buscar nombre, DNI, teléfono..."
+            placeholder="Buscar nombre, DNI, residencia..."
             className="w-full text-xs border border-slate-200 rounded-xl pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-uba-blue bg-white"
           />
         </div>
 
-        <SelectFilter label="Especialidad" value={filtros.especialidad} options={ESPECIALIDADES} onChange={(v) => setFiltros((f) => ({ ...f, especialidad: v }))} />
-        <SelectFilter label="Procedencia" value={filtros.procedencia} options={PROCEDENCIAS} onChange={(v) => setFiltros((f) => ({ ...f, procedencia: v }))} />
-        <SelectFilter label="Situación calle" value={filtros.situacion_calle} options={CALLE} onChange={(v) => setFiltros((f) => ({ ...f, situacion_calle: v }))} />
+        <SelectFilter label="Situación laboral" value={filtros.especialidad} options={SITUACIONES_LABORALES} onChange={(v) => setFiltros((f) => ({ ...f, especialidad: v }))} />
+        <SelectFilter label="Residencia" value={filtros.procedencia} options={RESIDENCIAS} onChange={(v) => setFiltros((f) => ({ ...f, procedencia: v }))} />
         <SelectFilter label="Cobertura médica" value={filtros.cobertura_medica} options={COBERTURAS} onChange={(v) => setFiltros((f) => ({ ...f, cobertura_medica: v }))} />
-        <SelectFilter label="Género" value={filtros.genero} options={GENEROS} onChange={(v) => setFiltros((f) => ({ ...f, genero: v }))} />
+        <SelectFilter label="Rango etario" value={filtros.genero} options={RANGOS_ETARIOS} onChange={(v) => setFiltros((f) => ({ ...f, genero: v }))} />
         <SelectFilter label="Localidad" value={filtros.localidad} options={localidades} onChange={(v) => setFiltros((f) => ({ ...f, localidad: v }))} />
 
-        {/* Hora range */}
         <div className="flex items-center gap-1.5 text-xs">
           <span className="text-slate-500">Hora:</span>
           <input type="number" min={0} max={23} value={filtros.hora_desde} onChange={(e) => setFiltros((f) => ({ ...f, hora_desde: Number(e.target.value) }))}

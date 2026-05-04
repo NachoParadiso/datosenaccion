@@ -1,12 +1,18 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import { Registro, Filtros, Estadisticas, DataStatus } from '../types';
 import { calcularEstadisticas, filtrarRegistros } from '../utils/statistics';
-import { useSheetData } from '../hooks/useSheetData';
+import { useSupabaseData } from '../hooks/useSupabaseData';
 
 const FILTROS_DEFAULT: Filtros = {
-  especialidad: '', procedencia: '', situacion_calle: '',
-  cobertura_medica: '', genero: '', hora_desde: 0, hora_hasta: 23,
-  localidad: '', search: '',
+  especialidad: '',
+  procedencia: '',
+  situacion_calle: '',
+  cobertura_medica: '',
+  genero: '',
+  hora_desde: 0,
+  hora_hasta: 23,
+  localidad: '',
+  search: '',
 };
 
 interface DataContextValue {
@@ -30,7 +36,7 @@ interface DataContextValue {
 const DataContext = createContext<DataContextValue | null>(null);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { data, status, lastUpdate, error, usingMock, customUrl, saveCustomUrl, refresh } = useSheetData();
+  const { data, status, lastUpdate, error, usingMock, refresh } = useSupabaseData();
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_DEFAULT);
   const [presentationMode, setPresentationMode] = useState(false);
 
@@ -39,15 +45,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const resetFiltros = () => setFiltros(FILTROS_DEFAULT);
 
-  return (
-    <DataContext.Provider value={{
-      rawData: data, filteredData, stats, filtros, setFiltros, resetFiltros,
-      status, lastUpdate, error, usingMock, customUrl, saveCustomUrl, refresh,
-      presentationMode, setPresentationMode,
-    }}>
-      {children}
-    </DataContext.Provider>
+  const contextValue: DataContextValue = useMemo(
+    () => ({
+      rawData: data,
+      filteredData,
+      stats,
+      filtros,
+      setFiltros,
+      resetFiltros,
+      status,
+      lastUpdate,
+      error,
+      usingMock,
+      customUrl: '',
+      saveCustomUrl: () => {},
+      refresh,
+      presentationMode,
+      setPresentationMode,
+    }),
+    [data, filteredData, stats, filtros, status, lastUpdate, error, usingMock, refresh, presentationMode]
   );
+
+  return <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>;
 }
 
 export function useData() {

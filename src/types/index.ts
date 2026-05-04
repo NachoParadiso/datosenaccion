@@ -16,6 +16,12 @@ export interface Registro {
   observaciones: string;
   hora: number;
   fecha: Date | null;
+  rango_etario: string;
+  cobertura: string;
+  residencia: string;
+  situacion_laboral: string;
+  impedimentos: string[];
+  urgencias: string[];
 }
 
 export interface Filtros {

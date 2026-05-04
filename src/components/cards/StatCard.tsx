@@ -29,31 +29,31 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = '
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+      transition={{ delay: index * 0.08 }}
       whileHover={onClick ? { scale: 1.02, y: -2 } : {}}
       onClick={onClick}
       className={clsx(
-        'rounded-2xl p-5 shadow-sm flex items-center gap-4 select-none',
+        'rounded-2xl p-6 shadow-sm flex items-center gap-4 select-none',
         t.bg, t.text,
         onClick && 'cursor-pointer'
       )}
     >
       {Icon && (
         <div className={clsx('rounded-xl p-3 flex-shrink-0', t.icon)}>
-          <Icon size={22} />
+          <Icon size={24} />
         </div>
       )}
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className={clsx('text-xs font-medium uppercase tracking-wide truncate', t.sub)}>{title}</p>
         <motion.p
           key={String(value)}
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-3xl font-black leading-tight mt-0.5"
+          className="text-3xl font-black leading-tight mt-1 break-words"
         >
           {value}
         </motion.p>
-        {subtitle && <p className={clsx('text-xs mt-0.5 truncate', t.sub)}>{subtitle}</p>}
+        {subtitle && <p className={clsx('text-xs mt-1 truncate', t.sub)}>{subtitle}</p>}
       </div>
     </motion.div>
   );

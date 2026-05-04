@@ -1,45 +1,98 @@
-const ESPECIALIDADES_MAP: Record<string, string> = {
-  odontologia: 'Odontología', odontología: 'Odontología',
-  'clinica medica': 'Clínica médica', 'clínica médica': 'Clínica médica', 'clinica médica': 'Clínica médica',
-  pediatria: 'Pediatría', pediatría: 'Pediatría',
-  ginecologia: 'Ginecología', ginecología: 'Ginecología',
-  'salud mental': 'Salud mental',
-  enfermeria: 'Enfermería', enfermería: 'Enfermería',
-  oftalmologia: 'Oftalmología', oftalmología: 'Oftalmología',
-  nutricion: 'Nutrición', nutrición: 'Nutrición',
-  'trabajo social': 'Trabajo social',
-  vacunacion: 'Vacunación', vacunación: 'Vacunación',
-  otra: 'Otra',
-};
-
-const PROCEDENCIAS_MAP: Record<string, string> = {
-  caba: 'CABA', 'ciudad autonoma de buenos aires': 'CABA', 'ciudad de buenos aires': 'CABA',
-  'provincia de buenos aires': 'Provincia de Buenos Aires', pba: 'Provincia de Buenos Aires',
-  'buenos aires': 'Provincia de Buenos Aires',
-  'otra provincia': 'Otra provincia',
-  'otro pais': 'Otro país', 'otro país': 'Otro país',
-};
-
-const CALLE_MAP: Record<string, string> = {
-  si: 'Sí', sí: 'Sí', s: 'Sí',
-  no: 'No',
-  'prefiere no responder': 'Prefiere no responder',
-  'no responde': 'Prefiere no responder',
+const RANGO_ETARIO_MAP: Record<string, string> = {
+  'menos de 18 años': 'Menos de 18 años',
+  '18 a 24 años': '18 a 24 años',
+  '25 a 34 años': '25 a 34 años',
+  '35 a 44 años': '35 a 44 años',
+  '45 a 54 años': '45 a 54 años',
+  '55 a 64 años': '55 a 64 años',
+  '65 años o más': '65 años o más', '65 anos o mas': '65 años o más',
 };
 
 const COBERTURA_MAP: Record<string, string> = {
-  si: 'Sí', sí: 'Sí',
-  no: 'No',
-  'no sabe': 'No sabe / no responde', 'no sabe / no responde': 'No sabe / no responde',
-  'no responde': 'No sabe / no responde',
+  'obra social': 'Obra social',
+  'obra social (empleo en relación de dependencia)': 'Obra social',
+  'obra social (empleo en relacion de dependencia)': 'Obra social',
+  'prepaga': 'Prepaga',
+  'pami': 'PAMI',
+  'solo salud pública': 'Solo salud pública / no tengo cobertura',
+  'solo salud publica': 'Solo salud pública / no tengo cobertura',
+  'solo salud pública / no tengo cobertura': 'Solo salud pública / no tengo cobertura',
+  'no tengo cobertura': 'Solo salud pública / no tengo cobertura',
+  'otro': 'Otro',
 };
 
-const GENERO_MAP: Record<string, string> = {
-  femenino: 'Femenino', f: 'Femenino',
-  masculino: 'Masculino', m: 'Masculino',
-  'no binario': 'No binario',
-  'prefiere no responder': 'Prefiere no responder',
-  otro: 'Otro',
+const RESIDENCIA_MAP: Record<string, string> = {
+  'caba': 'CABA',
+  'ciudad autónoma de buenos aires': 'CABA', 'ciudad autonoma de buenos aires': 'CABA',
+  'ciudad de buenos aires': 'CABA',
+  'conurbano bonaerense': 'Conurbano Bonaerense',
+  'conurbano': 'Conurbano Bonaerense',
+  'otra provincia': 'Otra provincia',
+};
+
+const SITUACION_LABORAL_MAP: Record<string, string> = {
+  'empleado/a en relación de dependencia': 'Empleado/a en relación de dependencia',
+  'empleado/a en relacion de dependencia': 'Empleado/a en relación de dependencia',
+  'empleado/a en relación de dependencia (en blanco)': 'Empleado/a en relación de dependencia',
+  'empleado/a en relacion de dependencia (en blanco)': 'Empleado/a en relación de dependencia',
+  'trabajo informal': 'Trabajo informal / en negro',
+  'trabajo informal / en negro': 'Trabajo informal / en negro',
+  'trabajo en negro': 'Trabajo informal / en negro',
+  'monotributista': 'Monotributista / autónomo', 'monotributista / autónomo': 'Monotributista / autónomo',
+  'monotributista / autonomo': 'Monotributista / autónomo',
+  'autónomo': 'Monotributista / autónomo', 'autonomo': 'Monotributista / autónomo',
+  'desempleado/a': 'Desempleado/a (busco trabajo)',
+  'desempleado/a (busco trabajo)': 'Desempleado/a (busco trabajo)',
+  'desempleado': 'Desempleado/a (busco trabajo)',
+  'no trabajo ni busco trabajo': 'No trabajo ni busco trabajo',
+  'no trabajo ni busco trabajo (estudio, jubilado/a, etc.)': 'No trabajo ni busco trabajo',
+  'no trabajo ni busco trabajo (estudio, jubilado/a, etc)': 'No trabajo ni busco trabajo',
+  'jubilado': 'No trabajo ni busco trabajo', 'jubilado/a': 'No trabajo ni busco trabajo',
+  'estudiante': 'No trabajo ni busco trabajo',
+};
+
+const IMPEDIMENTOS_MAP: Record<string, string> = {
+  'supermercado': 'Supermercado',
+  'el alquiler': 'El alquiler', 'alquiler': 'El alquiler',
+  'los servicios': 'Los servicios (luz, gas, agua)',
+  'los servicios (luz, gas, agua)': 'Los servicios (luz, gas, agua)',
+  'el transporte': 'El transporte', 'transporte': 'El transporte',
+  'la salud': 'La salud y medicamentos',
+  'la salud y medicamentos': 'La salud y medicamentos',
+  'salud': 'La salud y medicamentos',
+  'medicamentos': 'La salud y medicamentos',
+  'la educación': 'La educación / útiles',
+  'la educación / útiles': 'La educación / útiles',
+  'la educacion': 'La educación / útiles', 'la educacion / utiles': 'La educación / útiles',
+  'las deudas': 'Las deudas o créditos',
+  'las deudas o créditos': 'Las deudas o créditos',
+  'las deudas o creditos': 'Las deudas o créditos',
+  'deudas': 'Las deudas o créditos',
+  'llego a fin de mes': 'Llego a fin de mes sin problemas',
+  'llego a fin de mes sin problemas': 'Llego a fin de mes sin problemas',
+};
+
+const URGENCIAS_MAP: Record<string, string> = {
+  'inflación': 'Inflación y costo de vida', 'inflacion': 'Inflación y costo de vida',
+  'inflación y costo de vida': 'Inflación y costo de vida',
+  'inflacion y costo de vida': 'Inflación y costo de vida',
+  'costo de vida': 'Inflación y costo de vida',
+  'empleo': 'Empleo y salarios',
+  'empleo y salarios': 'Empleo y salarios',
+  'salarios': 'Empleo y salarios',
+  'salud pública': 'Salud pública', 'salud publica': 'Salud pública',
+  'seguridad': 'Seguridad',
+  'educación': 'Educación', 'educacion': 'Educación',
+  'vivienda': 'Vivienda',
+  'jubilaciones': 'Jubilaciones y pensiones',
+  'jubilaciones y pensiones': 'Jubilaciones y pensiones',
+  'pensiones': 'Jubilaciones y pensiones',
+  'corrupción': 'Corrupción e instituciones', 'corrupcion': 'Corrupción e instituciones',
+  'corrupción e instituciones': 'Corrupción e instituciones',
+  'corrupcion e instituciones': 'Corrupción e instituciones',
+  'pobreza': 'Pobreza e indigencia',
+  'pobreza e indigencia': 'Pobreza e indigencia',
+  'indigencia': 'Pobreza e indigencia',
 };
 
 function mapLower(map: Record<string, string>, value: string, fallback?: string): string {
@@ -47,53 +100,42 @@ function mapLower(map: Record<string, string>, value: string, fallback?: string)
   return map[key] ?? fallback ?? value.trim();
 }
 
-export function normalizeEspecialidad(v: string): string {
-  return mapLower(ESPECIALIDADES_MAP, v, v.trim() || 'Otra');
+function parseMultipleChoice(map: Record<string, string>, value: string): string[] {
+  if (!value || !value.trim()) return [];
+  return value
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+    .map(s => mapLower(map, s))
+    .filter(s => s.length > 0);
 }
 
-export function normalizeProcedencia(v: string): string {
-  return mapLower(PROCEDENCIAS_MAP, v, v.trim() || 'CABA');
-}
-
-export function normalizeCalle(v: string): string {
-  return mapLower(CALLE_MAP, v, 'No');
+export function normalizeRangoEtario(v: string): string {
+  return mapLower(RANGO_ETARIO_MAP, v, v.trim() || 'Sin dato');
 }
 
 export function normalizeCobertura(v: string): string {
-  return mapLower(COBERTURA_MAP, v, 'No sabe / no responde');
+  return mapLower(COBERTURA_MAP, v, v.trim() || 'Sin dato');
 }
 
-export function normalizeGenero(v: string): string {
-  return mapLower(GENERO_MAP, v, v.trim() || 'Prefiere no responder');
+export function normalizeResidencia(v: string): string {
+  return mapLower(RESIDENCIA_MAP, v, v.trim() || 'Sin dato');
 }
 
-export function normalizeEdad(v: string): number | null {
-  const n = parseInt(v.replace(/[^\d]/g, ''), 10);
-  if (isNaN(n) || n < 0 || n > 120) return null;
-  return n;
+export function normalizeSituacionLaboral(v: string): string {
+  return mapLower(SITUACION_LABORAL_MAP, v, v.trim() || 'Sin dato');
 }
 
-export function normalizeTelefono(v: string): string {
-  const t = v.trim().toLowerCase();
-  if (!t || t === 'sin teléfono' || t === 'sin telefono' || t === 'no tiene' || t === '-') {
-    return 'Sin teléfono';
-  }
-  return v.trim();
+export function normalizeImpedimentos(v: string): string[] {
+  return parseMultipleChoice(IMPEDIMENTOS_MAP, v);
+}
+
+export function normalizeUrgencias(v: string): string[] {
+  return parseMultipleChoice(URGENCIAS_MAP, v);
 }
 
 export function maskDni(dni: string): string {
   const clean = dni.replace(/\D/g, '');
   if (clean.length < 4) return `${clean.slice(0, 2)}***.***`;
   return `${clean.slice(0, 2)}.***.***`;
-}
-
-export function rangoEtario(edad: number | null): string {
-  if (edad === null) return 'Sin dato';
-  if (edad <= 12) return '0–12';
-  if (edad <= 17) return '13–17';
-  if (edad <= 29) return '18–29';
-  if (edad <= 44) return '30–44';
-  if (edad <= 59) return '45–59';
-  if (edad <= 74) return '60–74';
-  return '75+';
 }
