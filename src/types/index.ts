@@ -18,6 +18,19 @@ export interface Registro {
   fecha: Date | null;
 }
 
+export interface RegistroSupabase {
+  id: string;
+  marca_temporal: string;
+  nombre_completo: string;
+  dni: string;
+  rango_etario: string;
+  cobertura: string;
+  residencia: string;
+  situacion_laboral: string;
+  impedimentos: string[];
+  urgencias: string[];
+}
+
 export interface Filtros {
   especialidad: string;
   procedencia: string;
@@ -27,6 +40,16 @@ export interface Filtros {
   hora_desde: number;
   hora_hasta: number;
   localidad: string;
+  search: string;
+}
+
+export interface FiltrosSupabase {
+  rango_etario: string;
+  cobertura: string;
+  residencia: string;
+  situacion_laboral: string;
+  impedimento: string;
+  urgencia: string;
   search: string;
 }
 
@@ -47,6 +70,16 @@ export interface Estadisticas {
   por_calle: KV[];
   por_localidad: KV[];
   alertas: Alerta[];
+}
+
+export interface EstadisticasSupabase {
+  total_registros: number;
+  por_rango_etario: KV[];
+  por_cobertura: KV[];
+  por_residencia: KV[];
+  por_situacion_laboral: KV[];
+  top_impedimentos: KV[];
+  top_urgencias: KV[];
 }
 
 export interface KV {

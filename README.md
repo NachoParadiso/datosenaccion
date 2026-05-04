@@ -1,119 +1,189 @@
 # UBA en Acción — Dashboard en vivo
 
-Dashboard web para monitorear en tiempo real el operativo UBA en Acción, conectado a Google Forms → Google Sheets.
+Dashboard web para monitorear en tiempo real el operativo UBA en Acción, con arquitectura:
+
+```
+Google Forms → Google Sheets → Google Apps Script → Supabase → Dashboard (React)
+```
 
 ---
 
 ## Cómo correrlo
 
 ```bash
-cd uba-en-accion-dashboard
+cd "datos en accion"
 npm install
 npm run dev
 # Abrí: http://localhost:5173
 ```
 
-Sin configurar la URL de Google Sheets, el dashboard funciona con **90 registros de prueba** automáticamente.
+Sin credenciales de Supabase configuradas, el dashboard funciona con **datos de prueba** automáticamente.
 
 ---
 
-## Cómo conectar Google Forms + Google Sheets
+## Configuración del entorno
 
-### ESCENARIO A: Ya tenés un Google Forms armado
+Copiá `.env.example` a `.env.local` y completá los valores:
 
-**Paso 1:** Abrí la Google Sheet que recibe las respuestas de tu formulario.
-
-**Paso 2:** `Archivo → Compartir → Publicar en la web`
-
-**Paso 3:** En el menú desplegable de hojas, seleccioná la hoja correcta (por defecto "Respuestas de formulario 1"). En formato, elegí **"Valores separados por comas (.csv)"**.
-
-**Paso 4:** Hacé clic en **Publicar** y confirmá. Copiá la URL que aparece.
-
-**Paso 5:** En el dashboard, hacé clic en el ícono ⚙ del header → pegá la URL → "Guardar y conectar".
-
-O alternativamente, creá un archivo `.env.local` en la raíz del proyecto:
 ```bash
-VITE_GOOGLE_SHEETS_CSV_URL=https://docs.google.com/spreadsheets/d/TU_ID/pub?output=csv
+# Supabase (obligatorio para producción)
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu_anon_public_key
+
+# Intervalo de actualización en ms (default: 10000)
+VITE_REFRESH_INTERVAL=10000
 ```
 
 ---
 
-### ESCENARIO B: Todavía no tenés el Google Forms
+## 1. Crear el proyecto en Supabase
 
-**Estructura recomendada del formulario:**
+1. Ir a https://supabase.com → New Project (plan gratuito)
+2. Ir a **Settings → API** y copiar:
+   - **Project URL** → `VITE_SUPABASE_URL`
+   - **anon public** → `VITE_SUPABASE_ANON_KEY`
+   - **service_role secret** → se usa en el Apps Script (nunca commitear)
 
-| # | Campo | Tipo | Obligatorio |
-|---|-------|------|-------------|
+## 2. Ejecutar el schema SQL
+
+1. Abrir el **SQL Editor** en el dashboard de Supabase
+2. Ejecutar los archivos de `bdd/` en orden:
+
+```
+bdd/01_schemas.sql
+bdd/02_lookup_tables.sql
+bdd/03_lookup_seed.sql
+bdd/04_encuesta_registros.sql
+bdd/05_relaciones.sql
+bdd/06_procedures.sql
+bdd/07_rls_policies.sql
+```
+
+Pegar el contenido de cada archivo y ejecutar. El orden es importante porque hay dependencias entre los scripts.
+
+### Schema de la base de datos
+
+```
+Schemas:
+  lookup/          → Tablas catálogo (opciones fijas del formulario)
+    rango_etario
+    cobertura
+    residencia
+    situacion_laboral
+    impedimentos
+    urgencias_gobierno
+
+  encuesta/        → Datos principales
+    registros      → Un registro por paciente
+
+  rel/             → Tablas puente (muchos a muchos)
+    registro_impedimentos
+    registro_urgencias
+```
+
+### Procedures (RPCs)
+
+El frontend **no hace SQL embebido**. Toda interacción con la base de datos es vía procedures:
+
+| Procedure | Función |
+|-----------|---------|
+| `encuesta__create_registro` | Inserta registro + relaciones (transaccional ACID) |
+| `encuesta__get_registros` | Retorna todos los registros aplanados |
+| `encuesta__get_registro_ultimo` | Retorna el último registro |
+| `encuesta__get_catalogos` | Retorna catálogos para filtros |
+| `encuesta__get_stats` | Retorna estadísticas en JSONB |
+| `encuesta__delete_registro` | Elimina un registro (CASCADE) |
+
+---
+
+## 3. Conectar Google Forms → Supabase vía Apps Script
+
+### Paso A: Crear el Google Forms
+
+Estructura del formulario:
+
+| # | Pregunta | Tipo | Obligatoria |
+|---|----------|------|-------------|
 | 1 | Nombre completo | Respuesta corta | Sí |
-| 2 | DNI | Respuesta corta (validar: número, 7-8 dígitos) | Sí |
-| 3 | Teléfono | Respuesta corta | Sí (aclarar: "sin teléfono" si no tiene) |
-| 4 | Procedencia | Opción múltiple: CABA / Provincia de Buenos Aires / Otra provincia / Otro país | Sí |
-| 5 | Localidad / barrio | Respuesta corta | Sí |
-| 6 | ¿Está en situación de calle? | Opción múltiple: Sí / No / Prefiere no responder | Sí |
-| 7 | Especialidad | Lista desplegable: Odontología / Clínica médica / Pediatría / Ginecología / Salud mental / Enfermería / Oftalmología / Nutrición / Trabajo social / Vacunación / Otra | Sí |
-| 8 | Motivo de consulta breve | Párrafo | No |
-| 9 | Edad | Respuesta corta (validar: número) | Sí |
-| 10 | Género | Opción múltiple: Femenino / Masculino / No binario / Prefiere no responder / Otro | No |
-| 11 | ¿Tiene cobertura médica / obra social? | Opción múltiple: Sí / No / No sabe / no responde | No |
-| 12 | ¿Atendido previamente por UBA en Acción? | Opción múltiple: Sí / No / No sabe | No |
-| 13 | Observaciones internas | Párrafo | No |
+| 2 | DNI | Respuesta corta (numérico) | Sí |
+| 3 | Edad | Opción única (rangos) | Sí |
+| 4 | ¿Tenés cobertura médica? | Opción única | Sí |
+| 5 | ¿Dónde vivís? | Opción única | Sí |
+| 6 | ¿Qué te impide llegar a fin de mes? | Opción múltiple (varias) | Sí |
+| 7 | ¿Qué tema debería tratar el gobierno? | Opción múltiple (máx 3) | Sí |
+| 8 | ¿Cuál es tu situación laboral? | Opción única | Sí |
 
-**Para vincular el formulario a Google Sheets:**
-1. En Google Forms → ícono de hoja de cálculo (Respuestas → Ver en Sheets)
-2. Esto crea automáticamente una Sheet con todas las columnas
-3. Seguí los pasos del Escenario A para publicarla como CSV
+### Paso B: Vincular Forms a Sheets
+
+1. En Google Forms → pestaña **Respuestas** → ícono de hoja de cálculo
+2. Se crea automáticamente una Google Sheet con las respuestas
+
+### Paso C: Configurar el Apps Script
+
+1. En la Google Sheet → **Extensiones → Apps Script**
+2. Copiar el contenido de `apps-script/FormTrigger.gs`
+3. Reemplazar `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` con tus valores
+4. **Importante**: ajustar los índices de columnas (`colNombreCompleto`, `colDNI`, etc.) según el orden real de las columnas en la Sheet
+5. Guardar el proyecto (Ctrl+S)
+6. Crear el trigger: **Editar → Disparadores → Agregar**
+   - Función: `onFormSubmit`
+   - Fuente del evento: `De la hoja de cálculo`
+   - Tipo: `Al enviarse`
+7. Aceptar los permisos solicitados
+
+### Paso D: Probar
+
+1. Enviar una respuesta de prueba desde el formulario
+2. En Apps Script → **Ejecuciones** → verificar que se ejecutó correctamente
+3. O ejecutar `testSendToSupabase()` manualmente desde el editor
 
 ---
 
-## Archivo de configuración
-
-```bash
-# .env.local  (crearlo en la raíz del proyecto)
-VITE_GOOGLE_SHEETS_CSV_URL=https://docs.google.com/spreadsheets/d/TU_ID/pub?output=csv
-VITE_REFRESH_INTERVAL=10000   # milisegundos (default: 10 segundos)
-```
-
----
-
-## Estructura del proyecto
+## Arquitectura del frontend
 
 ```
 src/
+├── lib/
+│   └── supabaseClient.ts     # Singleton del cliente Supabase
+├── services/
+│   └── supabaseService.ts    # Capa de abstracción (solo RPCs, sin SQL)
+├── hooks/
+│   ├── useSheetData.ts       # Legacy: Google Sheets CSV polling
+│   └── useSupabaseData.ts    # Nuevo: Supabase RPC polling
+├── context/
+│   └── DataContext.tsx       # Estado global + filtros
 ├── components/
-│   ├── layout/       Header.tsx
-│   ├── common/       LastUpdateBadge, AlertBanner, ConfigModal
-│   ├── cards/        StatCard, StatsCards
-│   ├── charts/       Specialty, TimeSeries, Origin, StreetSituation,
-│   │                 AgeDistribution, Coverage, Gender, Neighborhood
-│   ├── filters/      FiltersBar (búsqueda + filtros combinables)
-│   ├── table/        RecordsTable (con modal de detalle)
-│   ├── specialty/    SpecialtyDetail (vista de detalle por especialidad)
-│   └── presentation/ PresentationMode (pantalla grande / proyector)
-├── pages/            DashboardHome
-├── context/          DataContext (estado global + filtros)
-├── hooks/            useSheetData (fetch CSV + polling)
-├── utils/            normalize, statistics, csvParser, export
-├── data/             mockData (90 registros de prueba)
-└── types/            index.ts
+│   ├── layout/               # Header
+│   ├── common/               # LastUpdateBadge, AlertBanner, ConfigModal
+│   ├── cards/                # StatCard, StatsCards
+│   ├── charts/               # 8 gráficos (barras, área, torta, dona)
+│   ├── filters/              # FiltersBar (búsqueda + filtros)
+│   ├── table/                # RecordsTable
+│   ├── specialty/            # SpecialtyDetail
+│   └── presentation/         # Modo presentación (pantalla completa)
+├── pages/
+│   └── DashboardHome
+├── utils/                    # normalize, statistics, csvParser, export
+├── data/                     # mockData
+└── types/                    # index.ts
+
+bdd/                          # Schema SQL completo de Supabase
+apps-script/                  # Google Apps Script (puente Forms → Supabase)
 ```
 
 ---
 
 ## Funcionalidades incluidas
 
-- **Dashboard en vivo** con 7 KPI cards y auto-refresh configurable
+- **Dashboard en vivo** con KPI cards y auto-refresh configurable
 - **8 gráficos**: barras, área, torta, dona, barras horizontales
-- **Vista detallada por especialidad** — clic en cualquier barra del gráfico
-- **Filtros combinables**: especialidad, procedencia, situación de calle, cobertura, género, localidad, rango horario
-- **Buscador** por nombre, DNI, teléfono, localidad, especialidad
-- **Tabla de registros** con DNI enmascarado y modal de detalle completo
-- **Alertas automáticas**: alta demanda y situación de calle
+- **Filtros combinables** + buscador
+- **Tabla de registros** con modal de detalle
 - **Modo presentación** — pantalla completa para proyectar (ESC para salir)
-- **Exportación**: CSV de registros filtrados + CSV de resumen estadístico
-- **Datos de prueba**: 90 registros realistas cuando no hay URL configurada
-- **Animaciones** con Framer Motion en toda la UI
+- **Exportación** CSV de registros filtrados + resumen estadístico
+- **Datos de prueba** cuando no hay credenciales configuradas
+- **Animaciones** con Framer Motion
 - **Responsive**: celular, tablet, notebook, pantalla grande
-- **Modal de configuración** para cambiar la URL sin tocar código
 
 ---
 
@@ -127,12 +197,9 @@ src/
 
 ---
 
-## Mejoras futuras posibles
+## Notas de seguridad
 
-- Login con Google para proteger el acceso
-- Descarga de imagen del dashboard (html2canvas)
-- Exportación a Excel con múltiples hojas
-- Modo oscuro
-- Backend Node/Express con Google Sheets API v4 para mayor seguridad
-- Notificaciones push cuando hay alta demanda
-- Comparación entre franjas horarias
+- La `service_role` key **nunca** se commitea ni se expone en el frontend
+- El frontend solo usa la `anon` key, con acceso limitado vía RLS policies
+- Las procedures de escritura usan `SECURITY DEFINER` para ejecutarse con privilegios elevados
+- Todos los datos se almacenan encriptados en reposo y en tránsito (Supabase)
