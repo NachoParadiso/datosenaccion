@@ -272,12 +272,12 @@ LANGUAGE plpgsql
 STABLE
 AS $$
 BEGIN
-    RETURN QUERY SELECT 'rango_etario', id, descripcion, orden FROM lookup.rango_etario ORDER BY orden;
-    RETURN QUERY SELECT 'cobertura', id, descripcion, orden FROM lookup.cobertura ORDER BY orden;
-    RETURN QUERY SELECT 'residencia', id, descripcion, orden FROM lookup.residencia ORDER BY orden;
-    RETURN QUERY SELECT 'situacion_laboral', id, descripcion, orden FROM lookup.situacion_laboral ORDER BY orden;
-    RETURN QUERY SELECT 'impedimentos', id, descripcion, orden FROM lookup.impedimentos ORDER BY orden;
-    RETURN QUERY SELECT 'urgencias_gobierno', id, descripcion, orden FROM lookup.urgencias_gobierno ORDER BY orden;
+    RETURN QUERY SELECT 'rango_etario'::TEXT, re.id, re.descripcion, re.orden FROM lookup.rango_etario re ORDER BY re.orden;
+    RETURN QUERY SELECT 'cobertura'::TEXT, co.id, co.descripcion, co.orden FROM lookup.cobertura co ORDER BY co.orden;
+    RETURN QUERY SELECT 'residencia'::TEXT, re2.id, re2.descripcion, re2.orden FROM lookup.residencia re2 ORDER BY re2.orden;
+    RETURN QUERY SELECT 'situacion_laboral'::TEXT, sl.id, sl.descripcion, sl.orden FROM lookup.situacion_laboral sl ORDER BY sl.orden;
+    RETURN QUERY SELECT 'impedimentos'::TEXT, i.id, i.descripcion, i.orden FROM lookup.impedimentos i ORDER BY i.orden;
+    RETURN QUERY SELECT 'urgencias_gobierno'::TEXT, u.id, u.descripcion, u.orden FROM lookup.urgencias_gobierno u ORDER BY u.orden;
 END;
 $$;
 
