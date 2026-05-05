@@ -1,5 +1,68 @@
 import { Registro, Estadisticas, KV, HoraEntry, Alerta } from '../types';
+import type { StatsResult } from '../services/supabaseService';
 
+export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
+  const total = backend.total_registros || 0;
+
+  const mapKV = (arr: Array<{ categoria: string; cantidad: number }>): KV[] =>
+    arr.map((x) => ({ name: x.categoria, value: x.cantidad }));
+
+  const mapKVImp = (arr: Array<{ impedimento: string; cantidad: number }>): KV[] =>
+    arr.map((x) => ({ name: x.impedimento, value: x.cantidad }));
+
+  const mapKVUrg = (arr: Array<{ urgencia: string; cantidad: number }>): KV[] =>
+    arr.map((x) => ({ name: x.urgencia, value: x.cantidad }));
+
+  const por_rango_etario = mapKV(backend.por_rango_etario || []);
+  const por_cobertura = mapKV(backend.por_cobertura || []);
+  const por_residencia = mapKV(backend.por_residencia || []);
+  const por_situacion_laboral = mapKV(backend.por_situacion_laboral || []);
+  const top_impedimentos = mapKVImp(backend.top_impedimentos || []);
+  const top_urgencias = mapKVUrg(backend.top_urgencias || []);
+
+  const residencia_top = por_residencia[0]?.name ?? '—';
+  const situacion_top = por_situacion_laboral[0]?.name ?? '—';
+  const sinCobertura = por_cobertura.find(c => c.name === 'Solo salud pública / no tengo cobertura')?.value ?? 0;
+  const informal = por_situacion_laboral.find(s =>
+    s.name === 'Trabajo informal / en negro' || s.name === 'Desempleado/a (busco trabajo)'
+  )?.value ?? 0;
+
+  const alertas: Alerta[] = [];
+  const sinCobPct = total ? Math.round((sinCobertura / total) * 100) : 0;
+  if (sinCobPct >= 40) {
+    alertas.push({
+      tipo: 'info',
+      mensaje: `${sinCobPct}% de los encuestados no tiene cobertura médica. Reforzar mensaje sobre atención gratuita.`,
+    });
+  }
+  const topImp = top_impedimentos[0];
+  if (topImp && (topImp.pct ?? 0) >= 50) {
+    alertas.push({
+      tipo: 'alta_demanda',
+      mensaje: `${topImp.name}: ${topImp.pct}% lo señala como impedimento principal.`,
+    });
+  }
+
+  return {
+    total,
+    ultima_hora: 0,
+    especialidad_top: residencia_top,
+    pct_calle: 0,
+    pct_sin_cobertura: sinCobPct,
+    procedencia_top: situacion_top,
+    con_telefono: informal,
+    por_rango_etario,
+    por_cobertura,
+    por_residencia,
+    por_situacion_laboral,
+    top_impedimentos,
+    top_urgencias,
+    por_hora: (backend.por_hora as HoraEntry[]) || [],
+    alertas,
+  };
+}
+
+// Fallback para datos mock (no cambia)
 function countBy(data: Registro[], key: keyof Registro): KV[] {
   const counts: Record<string, number> = {};
   data.forEach((r) => {
@@ -41,34 +104,6 @@ function buildTimeSeries(data: Registro[]): HoraEntry[] {
   }));
 }
 
-function buildAlertas(data: Registro[], por_cobertura: KV[]): Alerta[] {
-  const alertas: Alerta[] = [];
-  const total = data.length;
-  if (!total) return alertas;
-
-  const sinCobertura = por_cobertura.find(c => c.name === 'Solo salud pública / no tengo cobertura');
-  const sinCoberturaPct = sinCobertura?.pct ?? 0;
-  if (sinCoberturaPct >= 40) {
-    alertas.push({
-      tipo: 'info',
-      mensaje: `${sinCoberturaPct}% de los encuestados no tiene cobertura médica. Reforzar mensaje sobre atención gratuita.`,
-    });
-  }
-
-  const topImpedimento = countMultiSelect(data, 'impedimentos')[0];
-  if (topImpedimento) {
-    const impPct = topImpedimento.pct ?? 0;
-    if (impPct >= 50) {
-      alertas.push({
-        tipo: 'alta_demanda',
-        mensaje: `${topImpedimento.name}: ${impPct}% lo señala como impedimento principal.`,
-      });
-    }
-  }
-
-  return alertas;
-}
-
 export function calcularEstadisticas(data: Registro[]): Estadisticas {
   const total = data.length;
 
@@ -82,10 +117,9 @@ export function calcularEstadisticas(data: Registro[]): Estadisticas {
   const por_cobertura = countBy(data, 'cobertura');
   const por_residencia = countBy(data, 'residencia');
   const por_situacion_laboral = countBy(data, 'situacion_laboral');
-  const por_impedimentos = countMultiSelect(data, 'impedimentos');
-  const por_urgencias = countMultiSelect(data, 'urgencias');
+  const top_impedimentos = countMultiSelect(data, 'impedimentos');
+  const top_urgencias = countMultiSelect(data, 'urgencias');
   const por_hora = buildTimeSeries(data);
-  const por_localidad = countBy(data, 'localidad_barrio');
 
   const residencia_top = por_residencia[0]?.name ?? '—';
   const situacion_top = por_situacion_laboral[0]?.name ?? '—';
@@ -94,24 +128,37 @@ export function calcularEstadisticas(data: Registro[]): Estadisticas {
     s.name === 'Trabajo informal / en negro' || s.name === 'Desempleado/a (busco trabajo)'
   )?.value ?? 0;
 
-  const alertas = buildAlertas(data, por_cobertura);
+  const alertas: Alerta[] = [];
+  const sinCobPct = total ? Math.round((sinCobertura / total) * 100) : 0;
+  if (sinCobPct >= 40) {
+    alertas.push({
+      tipo: 'info',
+      mensaje: `${sinCobPct}% de los encuestados no tiene cobertura médica. Reforzar mensaje sobre atención gratuita.`,
+    });
+  }
+  const topImp = top_impedimentos[0];
+  if (topImp && (topImp.pct ?? 0) >= 50) {
+    alertas.push({
+      tipo: 'alta_demanda',
+      mensaje: `${topImp.name}: ${topImp.pct}% lo señala como impedimento principal.`,
+    });
+  }
 
   return {
     total,
     ultima_hora: hoy,
     especialidad_top: residencia_top,
     pct_calle: 0,
-    pct_sin_cobertura: total ? Math.round((sinCobertura / total) * 100) : 0,
+    pct_sin_cobertura: sinCobPct,
     procedencia_top: situacion_top,
     con_telefono: informal,
-    por_especialidad: por_situacion_laboral,
-    por_procedencia: por_residencia,
-    por_hora,
-    por_edad: por_rango_etario,
-    por_genero: por_impedimentos,
+    por_rango_etario,
     por_cobertura,
-    por_calle: por_urgencias,
-    por_localidad,
+    por_residencia,
+    por_situacion_laboral,
+    top_impedimentos,
+    top_urgencias,
+    por_hora,
     alertas,
   };
 }
@@ -121,14 +168,14 @@ export function filtrarRegistros(data: Registro[], filtros: import('../types').F
     if (filtros.especialidad && r.situacion_laboral !== filtros.especialidad) return false;
     if (filtros.procedencia && r.residencia !== filtros.procedencia) return false;
     if (filtros.cobertura_medica && r.cobertura !== filtros.cobertura_medica) return false;
-    if (filtros.localidad && r.localidad_barrio.toLowerCase() !== filtros.localidad.toLowerCase()) return false;
+    if (filtros.localidad && r.localidad_barrio && r.localidad_barrio.toLowerCase() !== filtros.localidad.toLowerCase()) return false;
     if (r.hora < filtros.hora_desde || r.hora > filtros.hora_hasta) return false;
     if (filtros.search) {
       const q = filtros.search.toLowerCase();
       const match =
         r.nombre_completo.toLowerCase().includes(q) ||
         r.dni.includes(q) ||
-        r.localidad_barrio.toLowerCase().includes(q) ||
+        (r.localidad_barrio && r.localidad_barrio.toLowerCase().includes(q)) ||
         r.residencia.toLowerCase().includes(q);
       if (!match) return false;
     }

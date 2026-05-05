@@ -7,20 +7,22 @@ interface Props {
   value: string | number;
   subtitle?: string;
   icon?: LucideIcon;
-  color?: 'blue' | 'cyan' | 'green' | 'amber' | 'purple' | 'red' | 'white';
+  color?: 'blue' | 'cyan' | 'green' | 'amber' | 'purple' | 'red' | 'white' | 'emerald' | 'violet';
   trend?: 'up' | 'down' | null;
   onClick?: () => void;
   index?: number;
 }
 
 const themes = {
-  blue:   { bg: 'bg-uba-blue', text: 'text-white', sub: 'text-blue-200', icon: 'bg-blue-800/50' },
-  cyan:   { bg: 'bg-uba-cyan', text: 'text-white', sub: 'text-cyan-100', icon: 'bg-cyan-600/50' },
-  green:  { bg: 'bg-emerald-500', text: 'text-white', sub: 'text-emerald-100', icon: 'bg-emerald-600/50' },
-  amber:  { bg: 'bg-amber-500', text: 'text-white', sub: 'text-amber-100', icon: 'bg-amber-600/50' },
-  purple: { bg: 'bg-violet-600', text: 'text-white', sub: 'text-violet-100', icon: 'bg-violet-700/50' },
-  red:    { bg: 'bg-rose-500', text: 'text-white', sub: 'text-rose-100', icon: 'bg-rose-600/50' },
-  white:  { bg: 'bg-white border border-slate-100', text: 'text-slate-800', sub: 'text-slate-500', icon: 'bg-slate-100 text-slate-600' },
+  blue:    { bg: 'bg-uba-blue', text: 'text-white', sub: 'text-blue-200', icon: 'bg-blue-800/50' },
+  cyan:    { bg: 'bg-uba-cyan', text: 'text-white', sub: 'text-cyan-100', icon: 'bg-cyan-600/50' },
+  green:   { bg: 'bg-emerald-500', text: 'text-white', sub: 'text-emerald-100', icon: 'bg-emerald-600/50' },
+  amber:   { bg: 'bg-amber-500', text: 'text-white', sub: 'text-amber-100', icon: 'bg-amber-600/50' },
+  purple:  { bg: 'bg-violet-600', text: 'text-white', sub: 'text-violet-100', icon: 'bg-violet-700/50' },
+  red:     { bg: 'bg-rose-500', text: 'text-white', sub: 'text-rose-100', icon: 'bg-rose-600/50' },
+  white:   { bg: 'bg-white border border-slate-100', text: 'text-slate-800', sub: 'text-slate-500', icon: 'bg-slate-100 text-slate-600' },
+  emerald: { bg: 'bg-emerald-600', text: 'text-white', sub: 'text-emerald-100', icon: 'bg-emerald-700/50' },
+  violet:  { bg: 'bg-violet-500', text: 'text-white', sub: 'text-violet-100', icon: 'bg-violet-600/50' },
 };
 
 export default function StatCard({ title, value, subtitle, icon: Icon, color = 'white', trend, onClick, index = 0 }: Props) {

@@ -1,47 +1,38 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Activity, Users, Briefcase, Stethoscope, AlertTriangle, RefreshCw } from 'lucide-react';
+import { X, Activity, Users, Briefcase, Stethoscope, AlertTriangle, RefreshCw, LogIn } from 'lucide-react';
 import { useData } from '../../context/DataContext';
-import TimeSeriesChart from '../charts/TimeSeriesChart';
 import SituacionLaboralChart from '../charts/SituacionLaboralChart';
-import OriginChart from '../charts/OriginChart';
 import ImpedimentosChart from '../charts/ImpedimentosChart';
 import UrgenciasChart from '../charts/UrgenciasChart';
-import RangoEtarioChart from '../charts/RangoEtarioChart';
 import LastUpdateBadge from '../common/LastUpdateBadge';
+import LoginModal from '../common/LoginModal';
 
-function BigStat({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: typeof Users; color: string }) {
-  const isLongString = typeof value === 'string' && value.length > 20;
+function BigStat({ label, value, sub, icon: Icon, color }: { label: string; value: string | number; sub?: string; icon: typeof Users; color: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`rounded-3xl p-6 flex flex-col items-center justify-center gap-2 ${color}`}
+      className={`rounded-3xl p-6 flex flex-col items-center justify-center gap-1 ${color}`}
     >
-      <Icon size={28} />
+      <Icon size={24} />
       <motion.span
         key={String(value)}
         initial={{ scale: 0.5 }}
         animate={{ scale: 1 }}
-        className={isLongString ? 'text-2xl font-black text-center leading-tight px-4 break-words' : 'text-5xl font-black text-center'}
+        className="text-4xl font-black text-center"
       >
         {value}
       </motion.span>
-      <span className="text-sm font-medium opacity-80 text-center">{label}</span>
+      {sub && <span className="text-xs font-medium opacity-80 text-center">{sub}</span>}
+      <span className="text-xs font-medium opacity-70 text-center mt-1">{label}</span>
     </motion.div>
   );
 }
 
 export default function PresentationMode() {
-  const { stats, status, lastUpdate, usingMock, setPresentationMode, refresh } = useData();
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setPresentationMode(false);
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [setPresentationMode]);
+  const { stats, status, lastUpdate, usingMock, refresh, isInternalView, loginInternal, logoutInternal } = useData();
+  const [showLogin, setShowLogin] = useState(false);
 
   return (
     <motion.div
@@ -64,65 +55,71 @@ export default function PresentationMode() {
           <button onClick={refresh} className="p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white">
             <RefreshCw size={16} className={status === 'loading' ? 'animate-spin' : ''} />
           </button>
-          <button
-            onClick={() => setPresentationMode(false)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-colors"
-          >
-            <X size={15} />
-            Salir (Esc)
-          </button>
+          {/* Internal access button */}
+          {isInternalView ? (
+            <button
+              onClick={logoutInternal}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium transition-colors"
+            >
+              <X size={15} />
+              Salir interno
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowLogin(true)}
+              className="p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white transition-colors"
+              title="Acceso interno"
+            >
+              <LogIn size={16} />
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="p-8 space-y-8">
-        {/* Big stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          <BigStat label="Personas encuestadas" value={stats.total} icon={Users} color="bg-white text-uba-blue" />
-          <BigStat label="Sin cobertura médica" value={`${stats.pct_sin_cobertura}%`} icon={Stethoscope} color={stats.pct_sin_cobertura >= 40 ? 'bg-red-500 text-white' : 'bg-violet-500 text-white'} />
-          <BigStat label="Informal / desempleado" value={stats.con_telefono} icon={Briefcase} color="bg-amber-400 text-amber-900" />
-          <BigStat label="Top impedimento" value={stats.por_genero[0]?.name ?? '—'} icon={AlertTriangle} color="bg-uba-cyan text-white" />
-        </div>
+       <div className="p-8 space-y-8">
+         {/* Big stats - consistent format */}
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+           <BigStat label="Personas encuestadas" value={stats.total} sub="total registros" icon={Users} color="bg-white text-uba-blue" />
+           <BigStat label="Sin cobertura médica" value={stats.total > 0 ? Math.round(stats.pct_sin_cobertura * stats.total / 100) : 0} sub={`${stats.pct_sin_cobertura}% del total`} icon={Stethoscope} color={stats.pct_sin_cobertura >= 40 ? 'bg-red-500 text-white' : 'bg-violet-500 text-white'} />
+           <BigStat label="Informal / desempleado" value={stats.con_telefono} sub="situación laboral" icon={Briefcase} color="bg-amber-400 text-amber-900" />
+           <BigStat label="Top impedimento" value={stats.top_impedimentos[0]?.name ?? '—'} sub={`${stats.top_impedimentos[0]?.pct ?? 0}%`} icon={AlertTriangle} color="bg-uba-cyan text-white" />
+         </div>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-          <div className="xl:col-span-3 bg-white/10 backdrop-blur rounded-3xl p-6">
-            <div className="[&_h3]:text-white [&_.recharts-text]:fill-white [&_.recharts-cartesian-axis-tick-value]:fill-white/70">
-              <SituacionLaboralChart data={stats.por_especialidad} />
-            </div>
-          </div>
-          <div className="xl:col-span-2 bg-white/10 backdrop-blur rounded-3xl p-6">
-            <div className="[&_h3]:text-white">
-              <OriginChart data={stats.por_procedencia} title="Residencia" />
-            </div>
-          </div>
-        </div>
+         {/* 3-column layout by theme */}
+         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+           {/* Social column */}
+           <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
+             <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Social</h4>
+             <SituacionLaboralChart data={stats.por_situacion_laboral} />
+           </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 bg-white/10 backdrop-blur rounded-3xl p-6">
-            <div className="[&_h3]:text-white [&_.recharts-text]:fill-white/70">
-              <TimeSeriesChart data={stats.por_hora} />
-            </div>
-          </div>
-          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-            <div className="[&_h3]:text-white">
-              <UrgenciasChart data={stats.por_calle} />
-            </div>
-          </div>
-        </div>
+           {/* Economic column */}
+           <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
+             <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Económica</h4>
+             <ImpedimentosChart data={stats.top_impedimentos} />
+           </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-            <div className="[&_h3]:text-white [&_.recharts-text]:fill-white/70">
-              <ImpedimentosChart data={stats.por_genero} />
-            </div>
-          </div>
-          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-            <div className="[&_h3]:text-white">
-              <RangoEtarioChart data={stats.por_edad} />
-            </div>
-          </div>
-        </div>
-      </div>
+           {/* Political/Urgent column */}
+           <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
+             <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Política / Urgente</h4>
+             <UrgenciasChart data={stats.top_urgencias} />
+           </div>
+         </div>
+
+         {/* Internal-only content (visible after login) */}
+         {isInternalView && (
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             className="bg-white/10 backdrop-blur rounded-3xl p-6"
+           >
+             <h3 className="text-white text-lg font-bold mb-4">Vista Interna (Solo visible después del login)</h3>
+             <p className="text-blue-200 text-sm">Aquí irían los gráficos y datos adicionales para el equipo interno.</p>
+             {/* Puedés agregar más gráficos acá */}
+           </motion.div>
+         )}
+       </div>
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
     </motion.div>
   );
 }

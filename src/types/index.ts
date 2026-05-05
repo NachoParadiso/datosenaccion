@@ -44,14 +44,13 @@ export interface Estadisticas {
   pct_sin_cobertura: number;
   procedencia_top: string;
   con_telefono: number;
-  por_especialidad: KV[];
-  por_procedencia: KV[];
-  por_hora: HoraEntry[];
-  por_edad: KV[];
-  por_genero: KV[];
+  por_rango_etario: KV[];
   por_cobertura: KV[];
-  por_calle: KV[];
-  por_localidad: KV[];
+  por_residencia: KV[];
+  por_situacion_laboral: KV[];
+  top_impedimentos: KV[];
+  top_urgencias: KV[];
+  por_hora: HoraEntry[];
   alertas: Alerta[];
 }
 

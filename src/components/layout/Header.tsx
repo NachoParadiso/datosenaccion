@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RefreshCw, Settings, Maximize2, Download, FileSpreadsheet, Activity } from 'lucide-react';
+import { RefreshCw, Settings, Maximize2, Download, FileSpreadsheet, Activity, LogIn, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useData } from '../../context/DataContext';
 import LastUpdateBadge from '../common/LastUpdateBadge';
 import ConfigModal from '../common/ConfigModal';
 import { exportRegistrosCSV, exportResumenCSV } from '../../utils/export';
+import LoginModal from '../common/LoginModal';
 
 export default function Header() {
-  const { status, lastUpdate, usingMock, refresh, stats, filteredData, setPresentationMode } = useData();
+  const { status, lastUpdate, usingMock, refresh, stats, filteredData, setPresentationMode, isInternalView, logoutInternal } = useData();
   const [showConfig, setShowConfig] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const location = useLocation();
 
   const isDetail = location.pathname.startsWith('/especialidad');
@@ -87,6 +89,27 @@ export default function Header() {
               <span className="hidden md:inline">Presentación</span>
             </motion.button>
 
+            {/* Internal view toggle */}
+            {isInternalView ? (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={logoutInternal}
+                className="p-2 rounded-lg hover:bg-blue-700 transition-colors"
+                title="Salir de vista interna"
+              >
+                <LogOut size={16} />
+              </motion.button>
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowLogin(true)}
+                className="p-2 rounded-lg hover:bg-blue-700 transition-colors"
+                title="Acceso interno"
+              >
+                <LogIn size={16} />
+              </motion.button>
+            )}
+
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowConfig(true)}
@@ -119,6 +142,7 @@ export default function Header() {
       </header>
 
       {showConfig && <ConfigModal onClose={() => setShowConfig(false)} />}
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
 
       {/* Click outside to close export menu */}
       {showExport && <div className="fixed inset-0 z-40" onClick={() => setShowExport(false)} />}

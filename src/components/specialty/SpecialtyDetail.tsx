@@ -93,19 +93,19 @@ export default function SpecialtyDetail() {
               <TimeSeriesChart data={stats.por_hora} />
             </div>
             <div className="card">
-              <OriginChart data={stats.por_procedencia} title="Procedencia en esta especialidad" />
+              <OriginChart data={stats.por_residencia} title="Residencia en esta especialidad" />
             </div>
             <div className="card">
-              <AgeDistributionChart data={stats.por_edad} />
+              <AgeDistributionChart data={stats.por_rango_etario} />
             </div>
             <div className="card">
-              <StreetSituationChart data={stats.por_calle} />
+              <StreetSituationChart data={stats.por_situacion_laboral} />
             </div>
             <div className="card">
               <CoverageChart data={stats.por_cobertura} />
             </div>
             <div className="card">
-              <NeighborhoodChart data={stats.por_localidad} topN={8} />
+              <NeighborhoodChart data={stats.por_residencia} topN={8} />
             </div>
           </div>
 

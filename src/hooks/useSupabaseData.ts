@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Registro, DataStatus } from '../types';
-import { MOCK_DATA } from '../data/mockData';
+import { Registro, Estadisticas, DataStatus } from '../types';
+import { MOCK_DATA, MOCK_STATS } from '../data/mockData';
 import { supabaseService, RegistroAplanado, CatalogoEntry } from '../services/supabaseService';
+import { mapStatsFromBackend } from '../utils/statistics';
 
 const REFRESH_MS = Number(import.meta.env.VITE_REFRESH_INTERVAL ?? 10_000);
 
@@ -40,40 +41,52 @@ function mapToRegistro(row: RegistroAplanado): Registro {
 type CatalogoMap = Record<string, CatalogoEntry[]>;
 
 export function useSupabaseData() {
-  const [data, setData] = useState<Registro[]>([]);
+  const [data, setData] = useState<Registro[]>(MOCK_DATA);
+  const [stats, setStats] = useState<Estadisticas | null>(MOCK_STATS);
   const [catalogos, setCatalogos] = useState<CatalogoMap>({});
-  const [status, setStatus] = useState<DataStatus>('idle');
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [status, setStatus] = useState<DataStatus>('mock');
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(new Date());
   const [error, setError] = useState<string | null>(null);
-
-  const usingMock = !hasCredentials();
+  const [usingMock, setUsingMock] = useState<boolean>(true);
 
   const fetchAll = useCallback(async () => {
-    if (usingMock) {
+    if (!hasCredentials()) {
+      // No hay credenciales, usar mock directamente
       setData(MOCK_DATA);
+      setStats(MOCK_STATS);
       setStatus('mock');
+      setUsingMock(true);
       setLastUpdate(new Date());
       return;
     }
 
     setStatus('loading');
+    setUsingMock(false);
     try {
-      const [registrosRaw, catalogosData] = await Promise.all([
+      const [registrosRaw, statsRaw, catalogosData] = await Promise.all([
         supabaseService.getRegistros(),
+        supabaseService.getStats(),
         supabaseService.getCatalogos(),
       ]);
 
       setData(registrosRaw.map(mapToRegistro));
+      if (statsRaw) {
+        setStats(mapStatsFromBackend(statsRaw));
+      }
       setCatalogos(catalogosData);
       setStatus('ok');
       setLastUpdate(new Date());
       setError(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError(message);
-      setStatus('error');
+      console.warn('Supabase connection failed, falling back to mock data:', err);
+      setData(MOCK_DATA);
+      setStats(MOCK_STATS);
+      setStatus('mock');
+      setUsingMock(true);
+      setLastUpdate(new Date());
+      setError(null);
     }
-  }, [usingMock]);
+  }, []);
 
   useEffect(() => {
     fetchAll();
@@ -83,6 +96,7 @@ export function useSupabaseData() {
 
   return {
     data,
+    stats,
     catalogos,
     status,
     lastUpdate,

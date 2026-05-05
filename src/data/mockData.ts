@@ -175,3 +175,69 @@ export function generarMockData(n = 90): Registro[] {
 }
 
 export const MOCK_DATA = generarMockData(90);
+
+import type { Estadisticas } from '../types';
+
+export const MOCK_STATS: Estadisticas = {
+  total: MOCK_DATA.length,
+  ultima_hora: 12,
+  especialidad_top: 'CABA',
+  pct_calle: 0,
+  pct_sin_cobertura: 35,
+  procedencia_top: 'Trabajo informal / en negro',
+  con_telefono: 28,
+  por_rango_etario: [
+    { name: '18 a 24 años', value: 25 },
+    { name: '25 a 34 años', value: 22 },
+    { name: '35 a 44 años', value: 18 },
+    { name: '45 a 54 años', value: 12 },
+    { name: '55 a 64 años', value: 8 },
+    { name: '65 años o más', value: 3 },
+    { name: 'Menos de 18 años', value: 2 },
+  ],
+  por_cobertura: [
+    { name: 'Obra social', value: 30 },
+    { name: 'Prepaga', value: 15 },
+    { name: 'PAMI', value: 5 },
+    { name: 'Solo salud pública / no tengo cobertura', value: 35 },
+    { name: 'Otro', value: 5 },
+  ],
+  por_residencia: [
+    { name: 'CABA', value: 50 },
+    { name: 'Conurbano Bonaerense', value: 30 },
+    { name: 'Otra provincia', value: 10 },
+  ],
+  por_situacion_laboral: [
+    { name: 'Empleado/a en relación de dependencia', value: 25 },
+    { name: 'Trabajo informal / en negro', value: 28 },
+    { name: 'Monotributista / autónomo', value: 12 },
+    { name: 'Desempleado/a (busco trabajo)', value: 18 },
+    { name: 'No trabajo ni busco trabajo', value: 7 },
+  ],
+  top_impedimentos: [
+    { name: 'La salud y medicamentos', value: 32 },
+    { name: 'Supermercado', value: 28 },
+    { name: 'El alquiler', value: 22 },
+    { name: 'Los servicios (luz, gas, agua)', value: 18 },
+    { name: 'El transporte', value: 15 },
+    { name: 'La educación / útiles', value: 10 },
+    { name: 'Las deudas o créditos', value: 8 },
+    { name: 'Llego a fin de mes sin problemas', value: 5 },
+  ],
+  top_urgencias: [
+    { name: 'Inflación y costo de vida', value: 38 },
+    { name: 'Empleo y salarios', value: 28 },
+    { name: 'Salud pública', value: 22 },
+    { name: 'Seguridad', value: 15 },
+    { name: 'Educación', value: 12 },
+    { name: 'Vivienda', value: 10 },
+    { name: 'Jubilaciones y pensiones', value: 8 },
+    { name: 'Corrupción e instituciones', value: 5 },
+    { name: 'Pobreza e indigencia', value: 4 },
+  ],
+  por_hora: Array.from({ length: 24 }, (_, h) => ({
+    hora: `${String(h).padStart(2, '0')}:00`,
+    total: h >= 8 && h <= 18 ? Math.floor(Math.random() * 8) + 1 : 0,
+  })),
+  alertas: [],
+};

@@ -44,6 +44,7 @@ export interface StatsResult {
   por_situacion_laboral: Array<{ categoria: string; cantidad: number }>;
   top_impedimentos: Array<{ impedimento: string; cantidad: number }>;
   top_urgencias: Array<{ urgencia: string; cantidad: number }>;
+  por_hora?: Array<{ hora: string; total: number }>;
 }
 
 /**

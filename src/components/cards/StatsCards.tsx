@@ -1,4 +1,4 @@
-import { Users, Calendar } from 'lucide-react';
+import { Users, Calendar, MapPin, Stethoscope, Briefcase, AlertTriangle } from 'lucide-react';
 import StatCard from './StatCard';
 import { useData } from '../../context/DataContext';
 
@@ -18,6 +18,41 @@ export default function StatsCards() {
       value: stats.ultima_hora,
       subtitle: 'en la fecha de hoy',
       icon: Calendar,
+      color: 'cyan' as const,
+    },
+    {
+      title: 'Residencia top',
+      value: stats.por_residencia[0]?.name ?? '—',
+      subtitle: 'de dónde vienen la mayoría',
+      icon: MapPin,
+      color: 'emerald' as const,
+    },
+    {
+      title: 'Sin cobertura médica',
+      value: `${stats.pct_sin_cobertura}%`,
+      subtitle: 'crítico para salud pública',
+      icon: Stethoscope,
+      color: stats.pct_sin_cobertura >= 40 ? 'red' as const : 'violet' as const,
+    },
+    {
+      title: 'Informal / desempleado',
+      value: stats.con_telefono,
+      subtitle: 'vulnerabilidad laboral',
+      icon: Briefcase,
+      color: 'amber' as const,
+    },
+    {
+      title: 'Situación laboral top',
+      value: stats.por_situacion_laboral[0]?.name ?? '—',
+      subtitle: 'categoría laboral más frecuente',
+      icon: Briefcase,
+      color: 'blue' as const,
+    },
+    {
+      title: 'Top impedimento',
+      value: stats.top_impedimentos[0]?.name ?? '—',
+      subtitle: 'principal obstáculo financiero',
+      icon: AlertTriangle,
       color: 'cyan' as const,
     },
   ];

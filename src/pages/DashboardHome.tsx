@@ -19,7 +19,7 @@ const section = {
 };
 
 export default function DashboardHome() {
-  const { stats, filteredData, usingMock } = useData();
+  const { stats, filteredData, usingMock, isInternalView } = useData();
 
   return (
     <motion.div
@@ -46,47 +46,71 @@ export default function DashboardHome() {
         <StatsCards />
       </motion.div>
 
-      <motion.div {...section} transition={{ delay: 0.1 }}>
-        <FiltersBar />
-      </motion.div>
+      {/* Client view: only 3 charts they care about */}
+      {!isInternalView && (
+        <>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <motion.div {...section} transition={{ delay: 0.15 }} className="card">
+              <SituacionLaboralChart data={stats.por_situacion_laboral} />
+            </motion.div>
+            <motion.div {...section} transition={{ delay: 0.2 }} className="card">
+              <ImpedimentosChart data={stats.top_impedimentos} />
+            </motion.div>
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <motion.div {...section} transition={{ delay: 0.25 }} className="card">
+              <UrgenciasChart data={stats.top_urgencias} />
+            </motion.div>
+          </div>
+        </>
+      )}
 
-      {/* Row 1: Situación Laboral + Time Series */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <motion.div {...section} transition={{ delay: 0.15 }} className="card">
-          <SituacionLaboralChart data={stats.por_especialidad} />
-        </motion.div>
-        <motion.div {...section} transition={{ delay: 0.2 }} className="card">
-          <TimeSeriesChart data={stats.por_hora} />
-        </motion.div>
-      </div>
+      {/* Internal view: everything */}
+      {isInternalView && (
+        <>
+          <motion.div {...section} transition={{ delay: 0.1 }}>
+            <FiltersBar />
+          </motion.div>
 
-      {/* Row 2: Residencia + Rango Etario + Cobertura */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        <motion.div {...section} transition={{ delay: 0.22 }} className="card">
-          <OriginChart data={stats.por_procedencia} />
-        </motion.div>
-        <motion.div {...section} transition={{ delay: 0.24 }} className="card">
-          <RangoEtarioChart data={stats.por_edad} />
-        </motion.div>
-        <motion.div {...section} transition={{ delay: 0.26 }} className="card">
-          <CoverageChart data={stats.por_cobertura} />
-        </motion.div>
-      </div>
+          {/* Row 1: Situación Laboral + Time Series */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <motion.div {...section} transition={{ delay: 0.15 }} className="card">
+              <SituacionLaboralChart data={stats.por_situacion_laboral} />
+            </motion.div>
+            <motion.div {...section} transition={{ delay: 0.2 }} className="card">
+              <TimeSeriesChart data={stats.por_hora} />
+            </motion.div>
+          </div>
 
-      {/* Row 3: Impedimentos + Urgencias */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <motion.div {...section} transition={{ delay: 0.28 }} className="card">
-          <ImpedimentosChart data={stats.por_genero} />
-        </motion.div>
-        <motion.div {...section} transition={{ delay: 0.30 }} className="card">
-          <UrgenciasChart data={stats.por_calle} />
-        </motion.div>
-      </div>
+          {/* Row 2: Residencia + Rango Etario + Cobertura */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <motion.div {...section} transition={{ delay: 0.22 }} className="card">
+              <OriginChart data={stats.por_residencia} />
+            </motion.div>
+            <motion.div {...section} transition={{ delay: 0.24 }} className="card">
+              <RangoEtarioChart data={stats.por_rango_etario} />
+            </motion.div>
+            <motion.div {...section} transition={{ delay: 0.26 }} className="card">
+              <CoverageChart data={stats.por_cobertura} />
+            </motion.div>
+          </div>
 
-      {/* Records table */}
-      <motion.div {...section} transition={{ delay: 0.35 }} className="card">
-        <RecordsTable data={filteredData} title="Todos los registros" maxRows={25} />
-      </motion.div>
+          {/* Row 3: Impedimentos + Urgencias */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <motion.div {...section} transition={{ delay: 0.28 }} className="card">
+              <ImpedimentosChart data={stats.top_impedimentos} />
+            </motion.div>
+            <motion.div {...section} transition={{ delay: 0.30 }} className="card">
+              <UrgenciasChart data={stats.top_urgencias} />
+            </motion.div>
+          </div>
+
+          {/* Records table */}
+          <motion.div {...section} transition={{ delay: 0.35 }} className="card">
+            <RecordsTable data={filteredData} title="Todos los registros" maxRows={25} />
+          </motion.div>
+        </>
+      )}
     </motion.div>
   );
 }
