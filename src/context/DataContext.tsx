@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import { Registro, Filtros, Estadisticas, DataStatus } from '../types';
-import { calcularEstadisticas, filtrarRegistros, mapStatsFromBackend } from '../utils/statistics';
+import { filtrarRegistros } from '../utils/statistics';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 
 const FILTROS_DEFAULT: Filtros = {
@@ -20,7 +20,7 @@ const INTERNAL_PASSWORD = 'uba2026';
 interface DataContextValue {
   rawData: Registro[];
   filteredData: Registro[];
-  stats: Estadisticas;
+  stats: Estadisticas | null;
   filtros: Filtros;
   setFiltros: React.Dispatch<React.SetStateAction<Filtros>>;
   resetFiltros: () => void;
@@ -48,17 +48,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const filteredData = useMemo(() => filtrarRegistros(data, filtros), [data, filtros]);
 
-  const stats = useMemo(() => {
-    if (backendStats) {
-      // Usar estadísticas del backend (Supabase conectado)
-      if (usingMock) {
-        return backendStats;
-      }
-      return backendStats;
-    }
-    // Fallback: calcular desde datos mock
-    return calcularEstadisticas(filteredData);
-  }, [backendStats, filteredData, usingMock]);
+  const stats = backendStats;
 
   const resetFiltros = () => setFiltros(FILTROS_DEFAULT);
 

@@ -2,7 +2,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Users, TrendingUp, Home } from 'lucide-react';
 import { useData } from '../../context/DataContext';
-import { calcularEstadisticas } from '../../utils/statistics';
 import { useMemo } from 'react';
 import StatCard from '../cards/StatCard';
 import OriginChart from '../charts/OriginChart';
@@ -18,14 +17,16 @@ export default function SpecialtyDetail() {
   const navigate = useNavigate();
   const { rawData, stats: globalStats } = useData();
 
+  if (!globalStats) {
+    return <div className="text-center text-slate-500 py-8">Cargando estadísticas...</div>;
+  }
+
   const especialidad = decodeURIComponent(nombre ?? '');
 
   const data = useMemo(
     () => rawData.filter((r) => r.especialidad === especialidad),
     [rawData, especialidad]
   );
-
-  const stats = useMemo(() => calcularEstadisticas(data), [data]);
 
   const pct = globalStats.total > 0 ? Math.round((data.length / globalStats.total) * 100) : 0;
   const calleCount = data.filter((r) => r.situacion_calle === 'Sí').length;
@@ -84,28 +85,28 @@ export default function SpecialtyDetail() {
             <StatCard title="Total" value={data.length} icon={Users} color="blue" index={0} />
             <StatCard title="% del operativo" value={`${pct}%`} icon={TrendingUp} color="cyan" index={1} />
             <StatCard title="Situación de calle" value={calleCount} icon={Home} color={calleCount > 0 ? 'red' : 'white'} index={2} />
-            <StatCard title="Sin cobertura" value={stats.por_cobertura.find((e) => e.name === 'No')?.value ?? 0} color="amber" index={3} />
+            <StatCard title="Sin cobertura" value={globalStats.por_cobertura.find((e) => e.name === 'Solo salud pública / no tengo cobertura')?.value ?? 0} color="amber" index={3} />
           </div>
 
           {/* Charts grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div className="card">
-              <TimeSeriesChart data={stats.por_hora} />
+              <TimeSeriesChart data={globalStats.por_hora} />
             </div>
             <div className="card">
-              <OriginChart data={stats.por_residencia} title="Residencia en esta especialidad" />
+              <OriginChart data={globalStats.por_residencia} title="Residencia en esta especialidad" />
             </div>
             <div className="card">
-              <AgeDistributionChart data={stats.por_rango_etario} />
+              <AgeDistributionChart data={globalStats.por_rango_etario} />
             </div>
             <div className="card">
-              <StreetSituationChart data={stats.por_situacion_laboral} />
+              <StreetSituationChart data={globalStats.por_situacion_laboral} />
             </div>
             <div className="card">
-              <CoverageChart data={stats.por_cobertura} />
+              <CoverageChart data={globalStats.por_cobertura} />
             </div>
             <div className="card">
-              <NeighborhoodChart data={stats.por_residencia} topN={8} />
+              <NeighborhoodChart data={globalStats.por_residencia} topN={8} />
             </div>
           </div>
 

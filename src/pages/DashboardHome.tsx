@@ -19,7 +19,11 @@ const section = {
 };
 
 export default function DashboardHome() {
-  const { stats, filteredData, usingMock, isInternalView } = useData();
+  const { stats, filteredData, isInternalView } = useData();
+
+  if (!stats) {
+    return <div className="text-center text-slate-500 py-8">Cargando estadísticas...</div>;
+  }
 
   return (
     <motion.div
@@ -29,13 +33,6 @@ export default function DashboardHome() {
       exit={{ opacity: 0 }}
       className="space-y-5"
     >
-      {usingMock && (
-        <motion.div {...section} className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3 flex items-center gap-3 text-sm text-amber-800">
-          <span className="font-semibold">Datos de prueba activos.</span>
-          <span>Para conectar con la base de datos, configurá las variables de entorno en .env.local</span>
-        </motion.div>
-      )}
-
       {stats.alertas.length > 0 && (
         <motion.div {...section}>
           <AlertBanner alertas={stats.alertas} />

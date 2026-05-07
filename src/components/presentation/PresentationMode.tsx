@@ -34,6 +34,14 @@ export default function PresentationMode() {
   const { stats, status, lastUpdate, usingMock, refresh, isInternalView, loginInternal, logoutInternal } = useData();
   const [showLogin, setShowLogin] = useState(false);
 
+  if (!stats) {
+    return (
+      <div className="fixed inset-0 bg-uba-blue z-50 flex items-center justify-center">
+        <p className="text-white text-lg">Cargando estadísticas...</p>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -115,7 +123,7 @@ export default function PresentationMode() {
            >
              <h3 className="text-white text-lg font-bold mb-4">Vista Interna (Solo visible después del login)</h3>
              <p className="text-blue-200 text-sm">Aquí irían los gráficos y datos adicionales para el equipo interno.</p>
-             {/* Puedés agregar más gráficos acá */}
+             {/* Podés agregar más gráficos acá */}
            </motion.div>
          )}
        </div>
