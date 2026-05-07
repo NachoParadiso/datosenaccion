@@ -53,7 +53,7 @@ export default function StatsCards() {
       color: sinCoberturaPct >= 40 ? 'red' as const : 'violet' as const,
     },
     {
-      title: 'Informal / desempleado',
+      title: 'Informal / desempregado',
       value: `${precarizadosPct}%`,
       subtitle: `Solo ${dependenciaPct}% en relación de dependencia`,
       icon: Briefcase,
@@ -62,9 +62,7 @@ export default function StatsCards() {
     {
       title: 'Top impedimento',
       value: topImpName,
-      subtitle: topImpName === 'Llego a fin de mes sin problemas'
-        ? `${llegaBienPct}% llega bien`
-        : `${topImpPct}% lo señala`,
+      subtitle: 'principal obstáculo',
       icon: AlertTriangle,
       color: 'cyan' as const,
     },
