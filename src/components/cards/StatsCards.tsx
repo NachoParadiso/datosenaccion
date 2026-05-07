@@ -5,6 +5,10 @@ import { useData } from '../../context/DataContext';
 export default function StatsCards() {
   const { stats } = useData();
 
+  if (!stats) {
+    return <div className="text-center text-gray-500 py-8">Cargando estadísticas...</div>;
+  }
+
   const cards = [
     {
       title: 'Total registros',

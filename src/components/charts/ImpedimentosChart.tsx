@@ -1,6 +1,8 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KV } from '../../types';
 
+const SUPERLATIVO = 25;
+
 interface Props { data: KV[]; }
 
 export default function ImpedimentosChart({ data: raw }: Props) {
@@ -8,8 +10,30 @@ export default function ImpedimentosChart({ data: raw }: Props) {
 
   const total = raw.reduce((s, d) => s + d.value, 0);
   const data = [...raw].sort((a, b) => b.value - a.value);
-  const topItem = data[0];
-  const insight = topItem ? `Principal obstáculo: "${topItem.name}" (${Math.round(topItem.value / total * 100)}%)` : '';
+
+  const withPct = data.map(item => ({
+    ...item,
+    pct: Math.round((item.value / total) * 100)
+  }));
+
+  const superlativos = withPct.filter(item => item.pct >= SUPERLATIVO);
+
+  let insight = '';
+  if (superlativos.length === 0) {
+    const pcts = withPct.map(item => item.pct);
+    const range = Math.max(...pcts) - Math.min(...pcts);
+    if (range < 10) {
+      insight = 'Sin impedimento claro: todo acapara casi lo mismo';
+    } else {
+      const topItem = withPct[0];
+      insight = `Principal obstáculo: "${topItem.name}" (${topItem.pct}%)`;
+    }
+  } else if (superlativos.length === 1) {
+    insight = `Predominancia de "${superlativos[0].name}"`;
+  } else {
+    const nombres = superlativos.map(s => s.name).join(', ');
+    insight = `${nombres} predominan`;
+  }
 
   return (
     <div>

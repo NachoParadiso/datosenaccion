@@ -68,13 +68,14 @@ export default function Header() {
                     <Download size={14} className="text-uba-blue" />
                     Exportar registros CSV
                   </button>
-                  <button
-                    onClick={() => { exportResumenCSV(stats); setShowExport(false); }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 text-left"
-                  >
-                    <FileSpreadsheet size={14} className="text-emerald-600" />
-                    Exportar resumen CSV
-                  </button>
+                   <button
+                     onClick={() => { exportResumenCSV(stats); setShowExport(false); }}
+                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 text-left disabled:opacity-50"
+                     disabled={!stats}
+                   >
+                     <FileSpreadsheet size={14} className="text-emerald-600" />
+                     Exportar resumen CSV
+                   </button>
                 </div>
               )}
             </div>
