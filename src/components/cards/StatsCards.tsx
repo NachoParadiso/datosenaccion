@@ -1,4 +1,4 @@
-import { Users, Calendar, MapPin, Stethoscope, Briefcase, AlertTriangle } from 'lucide-react';
+import { Stethoscope, Briefcase, AlertTriangle } from 'lucide-react';
 import StatCard from './StatCard';
 import { useData } from '../../context/DataContext';
 
@@ -9,53 +9,61 @@ export default function StatsCards() {
     return <div className="text-center text-gray-500 py-8">Cargando estadísticas...</div>;
   }
 
+  const total = stats.total || 0;
+
+  const sinCoberturaItem = (stats.por_cobertura || []).find(c =>
+    c.name === 'Solo salud pública / no tengo cobertura'
+  );
+  const sinCoberturaCount = sinCoberturaItem?.value ?? 0;
+  const sinCoberturaPct = stats.pct_sin_cobertura ?? Math.round((sinCoberturaCount / (total || 1)) * 100);
+
+  const pamiItem = (stats.por_cobertura || []).find(c => c.name === 'PAMI');
+  const pamiCount = pamiItem?.value ?? 0;
+  const pamiPct = total > 0 ? Math.round((pamiCount / total) * 100) : 0;
+
+  const informal = (stats.por_situacion_laboral || []).find(s =>
+    s.name === 'Trabajo informal / en negro'
+  )?.value ?? 0;
+  const desempleo = (stats.por_situacion_laboral || []).find(s =>
+    s.name === 'Desempleado/a (busco trabajo)'
+  )?.value ?? 0;
+  const precarizadosPct = total > 0 ? Math.round(((informal + desempleo) / total) * 100) : 0;
+
+  const dependencia = (stats.por_situacion_laboral || []).find(s =>
+    s.name === 'Empleado/a en relación de dependencia'
+  )?.value ?? 0;
+  const dependenciaPct = total > 0 ? Math.round((dependencia / total) * 100) : 0;
+
+  const topImp = (stats.top_impedimentos || [])[0];
+  const topImpName = topImp?.name ?? '—';
+  const topImpPct = topImp?.pct ?? 0;
+
   const cards = [
     {
-      title: 'Total registros',
-      value: stats.total,
-      subtitle: 'personas encuestadas',
-      icon: Users,
-      color: 'blue' as const,
-    },
-    {
-      title: 'Registros hoy',
-      value: stats.ultima_hora,
-      subtitle: 'en la fecha de hoy',
-      icon: Calendar,
-      color: 'cyan' as const,
-    },
-    {
-      title: 'Residencia top',
-      value: stats.por_residencia[0]?.name ?? '—',
-      subtitle: 'de dónde vienen la mayoría',
-      icon: MapPin,
-      color: 'emerald' as const,
-    },
-    {
       title: 'Sin cobertura médica',
-      value: `${stats.pct_sin_cobertura}%`,
-      subtitle: 'crítico para salud pública',
+      value: `${sinCoberturaPct}%`,
+      subtitle: `${sinCoberturaCount} personas sin cobertura · ${pamiPct}% con PAMI`,
       icon: Stethoscope,
-      color: stats.pct_sin_cobertura >= 40 ? 'red' as const : 'violet' as const,
+      color: sinCoberturaPct >= 40 ? 'red' as const : 'violet' as const,
     },
     {
       title: 'Informal / desempleado',
-      value: stats.con_telefono,
-      subtitle: 'vulnerabilidad laboral',
+      value: `${precarizadosPct}% informal + desempleado`,
+      subtitle: `Solo ${dependenciaPct}% en relación de dependencia`,
       icon: Briefcase,
       color: 'amber' as const,
     },
     {
       title: 'Situación laboral top',
-      value: stats.por_situacion_laboral[0]?.name ?? '—',
-      subtitle: 'categoría laboral más frecuente',
+      value: (stats.por_situacion_laboral || [])[0]?.name ?? '—',
+      subtitle: `${(stats.por_situacion_laboral || [])[0]?.pct ?? 0}% de los registrados`,
       icon: Briefcase,
       color: 'blue' as const,
     },
     {
       title: 'Top impedimento',
-      value: stats.top_impedimentos[0]?.name ?? '—',
-      subtitle: 'principal obstáculo financiero',
+      value: topImpName,
+      subtitle: `${topImpPct}% lo señala como principal`,
       icon: AlertTriangle,
       color: 'cyan' as const,
     },
