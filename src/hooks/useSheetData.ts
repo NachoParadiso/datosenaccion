@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Registro, DataStatus } from '../types';
 import { parseCSV } from '../utils/csvParser';
-import { MOCK_DATA } from '../data/mockData';
 
 const REFRESH_MS = Number(import.meta.env.VITE_REFRESH_INTERVAL ?? 10_000);
 const CSV_URL = import.meta.env.VITE_GOOGLE_SHEETS_CSV_URL as string | undefined;
@@ -16,13 +15,12 @@ export function useSheetData() {
   );
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const usingMock = !customUrl || customUrl === 'PEGAR_ACA_LA_URL_PUBLICA_CSV';
+  const usingMock = false;
 
   const fetchData = useCallback(async () => {
-    if (usingMock) {
-      setData(MOCK_DATA);
-      setStatus('mock');
-      setLastUpdate(new Date());
+    if (!customUrl) {
+      setStatus('idle');
+      setError('No hay URL de Google Sheets configurada');
       return;
     }
 
@@ -41,10 +39,8 @@ export function useSheetData() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error desconocido');
       setStatus('error');
-      // Fallback to mock on error
-      setData(MOCK_DATA);
     }
-  }, [customUrl, usingMock]);
+  }, [customUrl]);
 
   useEffect(() => {
     fetchData();

@@ -47,7 +47,11 @@ export function exportRegistrosCSV(data: Registro[]) {
   downloadFile(buildCsv(headers, rows), `uba-registros-${stamp()}.csv`);
 }
 
-export function exportResumenCSV(stats: Estadisticas) {
+export function exportResumenCSV(stats: Estadisticas | null) {
+  if (!stats) {
+    console.warn('No hay estadísticas para exportar');
+    return;
+  }
   const lines: string[] = [
     `Resumen operativo UBA en Acción — ${new Date().toLocaleString('es-AR')}`,
     '',

@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Registro, Estadisticas, DataStatus } from '../types';
-import { MOCK_DATA, MOCK_STATS } from '../data/mockData';
 import { supabaseService, RegistroAplanado, CatalogoEntry } from '../services/supabaseService';
 import { mapStatsFromBackend } from '../utils/statistics';
 
@@ -41,27 +40,22 @@ function mapToRegistro(row: RegistroAplanado): Registro {
 type CatalogoMap = Record<string, CatalogoEntry[]>;
 
 export function useSupabaseData() {
-  const [data, setData] = useState<Registro[]>(MOCK_DATA);
-  const [stats, setStats] = useState<Estadisticas | null>(MOCK_STATS);
+  const [data, setData] = useState<Registro[]>([]);
+  const [stats, setStats] = useState<Estadisticas | null>(null);
   const [catalogos, setCatalogos] = useState<CatalogoMap>({});
-  const [status, setStatus] = useState<DataStatus>('mock');
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(new Date());
+  const [status, setStatus] = useState<DataStatus>('loading');
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [usingMock, setUsingMock] = useState<boolean>(true);
+  const [usingMock, setUsingMock] = useState<boolean>(false);
 
   const fetchAll = useCallback(async () => {
     if (!hasCredentials()) {
-      // No hay credenciales, usar mock directamente
-      setData(MOCK_DATA);
-      setStats(MOCK_STATS);
-      setStatus('mock');
-      setUsingMock(true);
-      setLastUpdate(new Date());
+      setStatus('error');
+      setError('No hay credenciales de Supabase configuradas');
       return;
     }
 
     setStatus('loading');
-    setUsingMock(false);
     try {
       const [registrosRaw, statsRaw, catalogosData] = await Promise.all([
         supabaseService.getRegistros(),
@@ -77,14 +71,12 @@ export function useSupabaseData() {
       setStatus('ok');
       setLastUpdate(new Date());
       setError(null);
+      setUsingMock(false);
     } catch (err) {
-      console.warn('Supabase connection failed, falling back to mock data:', err);
-      setData(MOCK_DATA);
-      setStats(MOCK_STATS);
-      setStatus('mock');
-      setUsingMock(true);
-      setLastUpdate(new Date());
-      setError(null);
+      console.error('Supabase connection failed:', err);
+      setStatus('error');
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setUsingMock(false);
     }
   }, []);
 

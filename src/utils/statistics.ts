@@ -5,13 +5,13 @@ export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
   const total = backend.total_registros || 0;
 
   const mapKV = (arr: Array<{ categoria: string; cantidad: number }>): KV[] =>
-    arr.map((x) => ({ name: x.categoria, value: x.cantidad }));
+    arr.map((x) => ({ name: x.categoria, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
 
   const mapKVImp = (arr: Array<{ impedimento: string; cantidad: number }>): KV[] =>
-    arr.map((x) => ({ name: x.impedimento, value: x.cantidad }));
+    arr.map((x) => ({ name: x.impedimento, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
 
   const mapKVUrg = (arr: Array<{ urgencia: string; cantidad: number }>): KV[] =>
-    arr.map((x) => ({ name: x.urgencia, value: x.cantidad }));
+    arr.map((x) => ({ name: x.urgencia, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
 
   const por_rango_etario = mapKV(backend.por_rango_etario || []);
   const por_cobertura = mapKV(backend.por_cobertura || []);
@@ -19,6 +19,10 @@ export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
   const por_situacion_laboral = mapKV(backend.por_situacion_laboral || []);
   const top_impedimentos = mapKVImp(backend.top_impedimentos || []);
   const top_urgencias = mapKVUrg(backend.top_urgencias || []);
+  const por_hora = (backend.por_hora || []).map((h: { hora: string; total: number }) => ({
+    hora: h.hora,
+    total: h.total,
+  }));
 
   const residencia_top = por_residencia[0]?.name ?? '—';
   const situacion_top = por_situacion_laboral[0]?.name ?? '—';
@@ -57,7 +61,7 @@ export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
     por_situacion_laboral,
     top_impedimentos,
     top_urgencias,
-    por_hora: (backend.por_hora as HoraEntry[]) || [],
+    por_hora,
     alertas,
   };
 }

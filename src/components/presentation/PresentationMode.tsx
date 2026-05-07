@@ -1,38 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Activity, Users, Briefcase, Stethoscope, AlertTriangle, RefreshCw, LogIn } from 'lucide-react';
+import { X, Activity, RefreshCw, LogIn } from 'lucide-react';
 import { useData } from '../../context/DataContext';
+import StatsCards from '../cards/StatsCards';
 import SituacionLaboralChart from '../charts/SituacionLaboralChart';
 import ImpedimentosChart from '../charts/ImpedimentosChart';
 import UrgenciasChart from '../charts/UrgenciasChart';
 import LastUpdateBadge from '../common/LastUpdateBadge';
 import LoginModal from '../common/LoginModal';
 
-function BigStat({ label, value, sub, icon: Icon, color }: { label: string; value: string | number; sub?: string; icon: typeof Users; color: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`rounded-3xl p-6 flex flex-col items-center justify-center gap-1 ${color}`}
-    >
-      <Icon size={24} />
-      <motion.span
-        key={String(value)}
-        initial={{ scale: 0.5 }}
-        animate={{ scale: 1 }}
-        className="text-4xl font-black text-center"
-      >
-        {value}
-      </motion.span>
-      {sub && <span className="text-xs font-medium opacity-80 text-center">{sub}</span>}
-      <span className="text-xs font-medium opacity-70 text-center mt-1">{label}</span>
-    </motion.div>
-  );
-}
-
 export default function PresentationMode() {
   const { stats, status, lastUpdate, usingMock, refresh, isInternalView, loginInternal, logoutInternal } = useData();
   const [showLogin, setShowLogin] = useState(false);
+
+  const total = stats?.total || 0;
+  const horasConDatos = (stats?.por_hora || []).filter(h => (h.total || 0) > 0);
+  const promedioHora = horasConDatos.length > 0 ? Math.round(total / horasConDatos.length) : 0;
+
+  if (!stats) {
+    return (
+      <div className="fixed inset-0 bg-uba-blue z-50 flex items-center justify-center">
+        <p className="text-white text-lg">Cargando estadísticas...</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -46,8 +37,8 @@ export default function PresentationMode() {
         <div className="flex items-center gap-3">
           <Activity size={28} className="text-blue-700" />
           <div>
-            <h1 className="text-2xl font-black text-blue-700">UBA en Acción</h1>
-            <p className="text-blue-500 text-sm">Monitoreo en vivo del operativo</p>
+            <h1 className="text-2xl font-black text-white">UBA en Acción</h1>
+            <p className="text-blue-300 text-sm">Monitoreo en vivo del operativo - {total} encuestados - {promedioHora} promedio / hora</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -55,7 +46,6 @@ export default function PresentationMode() {
           <button onClick={refresh} className="p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white">
             <RefreshCw size={16} className={status === 'loading' ? 'animate-spin' : ''} />
           </button>
-          {/* Internal access button */}
           {isInternalView ? (
             <button
               onClick={logoutInternal}
@@ -76,49 +66,43 @@ export default function PresentationMode() {
         </div>
       </div>
 
-       <div className="p-8 space-y-8">
-         {/* Big stats - consistent format */}
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-           <BigStat label="Personas encuestadas" value={stats.total} sub="total registros" icon={Users} color="bg-green-600 text-white"/>
-           <BigStat label="Sin cobertura médica" value={stats.total > 0 ? Math.round(stats.pct_sin_cobertura * stats.total / 100) : 0} sub={`${stats.pct_sin_cobertura}% del total`} icon={Stethoscope} color={stats.pct_sin_cobertura >= 40 ? 'bg-red-500 text-white' : 'bg-violet-500 text-white'} />
-           <BigStat label="Informal / desempleado" value={stats.con_telefono} sub="situación laboral" icon={Briefcase} color="bg-amber-400 text-amber-900" />
-           <BigStat label="Top impedimento" value={stats.top_impedimentos[0]?.name ?? '—'} sub={`${stats.top_impedimentos[0]?.pct ?? 0}%`} icon={AlertTriangle} color="bg-uba-cyan text-white" />
-         </div>
+      <div className="p-8 space-y-8">
+        {/* Stats Cards */}
+        <StatsCards />
 
-         {/* 3-column layout by theme */}
-         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-           {/* Social column */}
-           <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-             <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Social</h4>
-             <SituacionLaboralChart data={stats.por_situacion_laboral} />
-           </div>
+        {/* 3-column layout by theme */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Social column */}
+          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
+            <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Social</h4>
+            <SituacionLaboralChart data={stats.por_situacion_laboral} />
+          </div>
 
-           {/* Economic column */}
-           <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-             <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Económica</h4>
-             <ImpedimentosChart data={stats.top_impedimentos} />
-           </div>
+          {/* Economic column */}
+          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
+            <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Económica</h4>
+            <ImpedimentosChart data={stats.top_impedimentos} />
+          </div>
 
-           {/* Political/Urgent column */}
-           <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-             <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Política / Urgente</h4>
-             <UrgenciasChart data={stats.top_urgencias} />
-           </div>
-         </div>
+          {/* Political/Urgent column */}
+          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
+            <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Política / Urgente</h4>
+            <UrgenciasChart data={stats.top_urgencias} />
+          </div>
+        </div>
 
-         {/* Internal-only content (visible after login) */}
-         {isInternalView && (
-           <motion.div
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             className="bg-white/10 backdrop-blur rounded-3xl p-6"
-           >
-             <h3 className="text-white text-lg font-bold mb-4">Vista Interna (Solo visible después del login)</h3>
-             <p className="text-blue-200 text-sm">Aquí irían los gráficos y datos adicionales para el equipo interno.</p>
-             {/* Puedés agregar más gráficos acá */}
-           </motion.div>
-         )}
-       </div>
+        {/* Internal-only content */}
+        {isInternalView && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/10 backdrop-blur rounded-3xl p-6"
+          >
+            <h3 className="text-white text-lg font-bold mb-4">Vista Interna (Solo visible después del login)</h3>
+            <p className="text-blue-200 text-sm">Aquí irían los gráficos y datos adicionales para el equipo interno.</p>
+          </motion.div>
+        )}
+      </div>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
     </motion.div>
   );
