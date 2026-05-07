@@ -11,7 +11,7 @@ export default function StatsCards() {
       value: stats.total,
       subtitle: 'personas encuestadas',
       icon: Users,
-      color: 'blue' as const,
+      color: 'red' as const,
     },
     {
       title: 'Registros hoy',

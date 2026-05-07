@@ -39,15 +39,15 @@ export default function PresentationMode() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-uba-blue z-50 overflow-auto"
+      className="fixed inset-0 bg-[#fff] z-50 overflow-auto"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-4 border-b border-blue-700">
         <div className="flex items-center gap-3">
-          <Activity size={28} className="text-white" />
+          <Activity size={28} className="text-blue-700" />
           <div>
-            <h1 className="text-2xl font-black text-white">UBA en Acción</h1>
-            <p className="text-blue-300 text-sm">Monitoreo en vivo del operativo</p>
+            <h1 className="text-2xl font-black text-blue-700">UBA en Acción</h1>
+            <p className="text-blue-500 text-sm">Monitoreo en vivo del operativo</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ export default function PresentationMode() {
        <div className="p-8 space-y-8">
          {/* Big stats - consistent format */}
          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-           <BigStat label="Personas encuestadas" value={stats.total} sub="total registros" icon={Users} color="bg-white text-uba-blue" />
+           <BigStat label="Personas encuestadas" value={stats.total} sub="total registros" icon={Users} color="bg-green-600 text-white"/>
            <BigStat label="Sin cobertura médica" value={stats.total > 0 ? Math.round(stats.pct_sin_cobertura * stats.total / 100) : 0} sub={`${stats.pct_sin_cobertura}% del total`} icon={Stethoscope} color={stats.pct_sin_cobertura >= 40 ? 'bg-red-500 text-white' : 'bg-violet-500 text-white'} />
            <BigStat label="Informal / desempleado" value={stats.con_telefono} sub="situación laboral" icon={Briefcase} color="bg-amber-400 text-amber-900" />
            <BigStat label="Top impedimento" value={stats.top_impedimentos[0]?.name ?? '—'} sub={`${stats.top_impedimentos[0]?.pct ?? 0}%`} icon={AlertTriangle} color="bg-uba-cyan text-white" />
