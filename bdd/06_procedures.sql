@@ -296,7 +296,6 @@ DECLARE
     v_stats JSONB;
 BEGIN
     SELECT COUNT(*) INTO v_total FROM encuesta.registros;
-
     v_stats := jsonb_build_object(
         'total_registros', v_total,
         'por_rango_etario', (
@@ -358,13 +357,23 @@ BEGIN
                 GROUP BY u2.id, u2.descripcion
                 ORDER BY cnt DESC
             ) u
+        ),
+        'por_hora', (
+            SELECT jsonb_agg(jsonb_build_object('hora', hora_formateada, 'total', cnt))
+            FROM (
+                SELECT 
+                    TO_CHAR(DATE_TRUNC('hour', marca_temporal), 'HH24:00') AS hora_formateada,
+                    COUNT(*)::INT AS cnt
+                FROM encuesta.registros
+                WHERE marca_temporal IS NOT NULL
+                GROUP BY DATE_TRUNC('hour', marca_temporal)
+                ORDER BY hora_formateada
+            ) sub
         )
     );
-
     RETURN v_stats;
 END;
 $$;
-
 -- ---------------------------------------------------------------------------
 -- delete_registro
 -- Elimina un registro y sus relaciones (CASCADE por ON DELETE en las FKs)
