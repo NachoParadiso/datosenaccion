@@ -62,7 +62,7 @@ export default function StatsCards() {
     {
       title: 'Top impedimento',
       value: topImpName,
-      subtitle: 'principal obstáculo',
+      subtitle: undefined,
       icon: AlertTriangle,
       color: 'cyan' as const,
     },
