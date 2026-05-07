@@ -54,21 +54,21 @@ export interface StatsResult {
  */
 class SupabaseService {
   async getRegistros(): Promise<RegistroAplanado[]> {
-    const { data, error } = await getClient().schema('encuesta').rpc('get_registros');
+    const { data, error } = await getClient().rpc('encuesta__get_registros');
 
     if (error) throw new Error(`get_registros: ${error.message}`);
     return data ?? [];
   }
 
   async getRegistroUltimo(): Promise<RegistroAplanado | null> {
-    const { data, error } = await getClient().schema('encuesta').rpc('get_registro_ultimo');
+    const { data, error } = await getClient().rpc('encuesta__get_registro_ultimo');
 
     if (error) throw new Error(`get_registro_ultimo: ${error.message}`);
     return data?.[0] ?? null;
   }
 
   async createRegistro(payload: CreateRegistroPayload): Promise<string> {
-    const { data, error } = await getClient().schema('encuesta').rpc('create_registro', {
+    const { data, error } = await getClient().rpc('encuesta__create_registro', {
       p_data: payload,
     });
 
@@ -77,7 +77,7 @@ class SupabaseService {
   }
 
   async deleteRegistro(registroId: string): Promise<void> {
-    const { error } = await getClient().schema('encuesta').rpc('delete_registro', {
+    const { error } = await getClient().rpc('encuesta__delete_registro', {
       p_registro_id: registroId,
     });
 
@@ -85,7 +85,7 @@ class SupabaseService {
   }
 
   async getCatalogos(): Promise<Record<string, CatalogoEntry[]>> {
-    const { data, error } = await getClient().schema('encuesta').rpc('get_catalogos');
+    const { data, error } = await getClient().rpc('encuesta__get_catalogos');
 
     if (error) throw new Error(`get_catalogos: ${error.message}`);
 
@@ -103,7 +103,7 @@ class SupabaseService {
   }
 
   async getStats(): Promise<StatsResult | null> {
-    const { data, error } = await getClient().schema('encuesta').rpc('get_stats');
+    const { data, error } = await getClient().rpc('encuesta__get_stats');
 
     if (error) throw new Error(`get_stats: ${error.message}`);
     return data;
