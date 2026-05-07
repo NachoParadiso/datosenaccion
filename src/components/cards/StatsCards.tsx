@@ -34,15 +34,19 @@ export default function StatsCards() {
   )?.value ?? 0;
   const dependenciaPct = total > 0 ? Math.round((dependencia / total) * 100) : 0;
 
-  const topImp = (stats.top_impedimentos || [])[0];
+const topImp = (stats.top_impedimentos || [])[0];
   const topImpName = topImp?.name ?? '—';
-  const topImpPct = topImp?.pct ?? 0;
+
+  const llegaBienItem = (stats.top_impedimentos || []).find(i =>
+    i.name === 'Llego a fin de mes sin problemas'
+  );
+  const llegaBienPct = llegaBienItem?.pct ?? 0;
 
   const cards = [
     {
       title: 'Sin cobertura médica',
-      value: `${sinCoberturaPct}%`,
-      subtitle: `${sinCoberturaCount} personas sin cobertura · ${pamiPct}% con PAMI`,
+      value: `${sinCoberturaPct}% sin cobertura`,
+      subtitle: `Incluye un ${pamiPct}% con PAMI`,
       icon: Stethoscope,
       color: sinCoberturaPct >= 40 ? 'red' as const : 'violet' as const,
     },
@@ -63,7 +67,7 @@ export default function StatsCards() {
     {
       title: 'Top impedimento',
       value: topImpName,
-      subtitle: `${topImpPct}% lo señala como principal`,
+      subtitle: `${llegaBienPct}% llega a fin de mes sin problemas`,
       icon: AlertTriangle,
       color: 'cyan' as const,
     },
