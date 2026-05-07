@@ -1,31 +1,39 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KV } from '../../types';
-import { useMemo } from 'react';
+
+const SUPERLATIVO = 25;
 
 interface Props { data: KV[]; }
 
 export default function UrgenciasChart({ data: raw }: Props) {
   if (!raw.length) return <div className="flex items-center justify-center h-48 text-slate-400 text-sm">Sin datos</div>;
 
-  const { chartData, total } = useMemo(() => {
-    const sorted = [...raw].sort((a, b) => b.value - a.value);
-    const total = sorted.reduce((s, d) => s + d.value, 0);
-    
-    // Group categories after top 5 into "Otros"
-    if (sorted.length <= 5) return { chartData: sorted, total };
-    
-    const top5 = sorted.slice(0, 5);
-    const rest = sorted.slice(5);
-    const otrosValue = rest.reduce((s, d) => s + d.value, 0);
-    
-    return { 
-      chartData: [...top5, { name: 'Otros', value: otrosValue }], 
-      total 
-    };
-  }, [raw]);
+  const total = raw.reduce((s, d) => s + d.value, 0);
+  const chartData = [...raw].sort((a, b) => b.value - a.value).slice(0, 10);
 
-  const topItem = chartData[0];
-  const insight = topItem ? `Tema prioritario: "${topItem.name}" (${Math.round(topItem.value / total * 100)}%)` : '';
+  const withPct = chartData.map(item => ({
+    ...item,
+    pct: Math.round((item.value / total) * 100)
+  }));
+
+  const superlativos = withPct.filter(item => item.pct >= SUPERLATIVO);
+
+  let insight = '';
+  if (superlativos.length === 0) {
+    const pcts = withPct.map(item => item.pct);
+    const range = Math.max(...pcts) - Math.min(...pcts);
+    if (range < 10) {
+      insight = 'Sin prioridad clara: todo preocupa casi igual';
+    } else {
+      const topItem = withPct[0];
+      insight = `Tema prioritario: "${topItem.name}" (${topItem.pct}%)`;
+    }
+  } else if (superlativos.length === 1) {
+    insight = `Predominancia de "${superlativos[0].name}"`;
+  } else {
+    const nombres = superlativos.map(s => s.name).join(', ');
+    insight = `${nombres} predominan`;
+  }
 
   return (
     <div>
@@ -42,7 +50,9 @@ export default function UrgenciasChart({ data: raw }: Props) {
             labelStyle={{ fontWeight: 600, marginBottom: 4 }}
           />
           <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={24} label={{ position: 'right', formatter: (v: number) => `${v} (${total ? Math.round(v / total * 100) : 0}%)`, style: { fontSize: 11, fill: '#334155', fontWeight: 600 } }}>
-            {chartData.map((_, i) => <Cell key={i} fill={i === 0 ? '#f59e0b' : '#10b981'} />)}
+            {chartData.map((_, i) => (
+              <Cell key={i} fill={i === 0 ? '#f59e0b' : '#10b981'} />
+            ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>

@@ -1,6 +1,8 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KV } from '../../types';
 
+const SUPERLATIVO = 25;
+
 interface Props { data: KV[]; }
 
 export default function SituacionLaboralChart({ data: raw }: Props) {
@@ -8,8 +10,30 @@ export default function SituacionLaboralChart({ data: raw }: Props) {
 
   const total = raw.reduce((s, d) => s + d.value, 0);
   const data = [...raw].sort((a, b) => b.value - a.value);
-  const topItem = data[0];
-  const insight = topItem ? `Predominancia de "${topItem.name}" (${Math.round(topItem.value / total * 100)}% del total)` : '';
+
+  const withPct = data.map(item => ({
+    ...item,
+    pct: Math.round((item.value / total) * 100)
+  }));
+
+  const superlativos = withPct.filter(item => item.pct >= SUPERLATIVO);
+
+  let insight = '';
+  if (superlativos.length === 0) {
+    const pcts = withPct.map(item => item.pct);
+    const range = Math.max(...pcts) - Math.min(...pcts);
+    if (range < 10) {
+      insight = 'Sin condición predominante';
+    } else {
+      const topItem = withPct[0];
+      insight = `Tema prioritario: "${topItem.name}" (${topItem.pct}% del total)`;
+    }
+  } else if (superlativos.length === 1) {
+    insight = `Predominancia de "${superlativos[0].name}"`;
+  } else {
+    const nombres = superlativos.map(s => s.name).join(', ');
+    insight = `${nombres} predominan`;
+  }
 
   return (
     <div>
