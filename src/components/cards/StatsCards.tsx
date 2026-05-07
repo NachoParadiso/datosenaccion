@@ -15,7 +15,7 @@ export default function StatsCards() {
     c.name === 'Solo salud pública / no tengo cobertura'
   );
   const sinCoberturaCount = sinCoberturaItem?.value ?? 0;
-  const sinCoberturaPct = stats.pct_sin_cobertura ?? Math.round((sinCoberturaCount / (total || 1)) * 100);
+  const sinCoberturaPct = total > 0 ? Math.round((sinCoberturaCount / total) * 100) : 0;
 
   const pamiItem = (stats.por_cobertura || []).find(c => c.name === 'PAMI');
   const pamiCount = pamiItem?.value ?? 0;
@@ -34,40 +34,37 @@ export default function StatsCards() {
   )?.value ?? 0;
   const dependenciaPct = total > 0 ? Math.round((dependencia / total) * 100) : 0;
 
-const topImp = (stats.top_impedimentos || [])[0];
+  const topImp = (stats.top_impedimentos || [])[0];
   const topImpName = topImp?.name ?? '—';
+  const topImpPct = topImp?.pct ?? 0;
 
   const llegaBienItem = (stats.top_impedimentos || []).find(i =>
     i.name === 'Llego a fin de mes sin problemas'
   );
-  const llegaBienPct = llegaBienItem?.pct ?? 0;
+  const llegaBienValue = llegaBienItem?.value ?? 0;
+  const llegaBienPct = total > 0 ? Math.round((llegaBienValue / total) * 100) : 0;
 
   const cards = [
     {
       title: 'Sin cobertura médica',
-      value: `${sinCoberturaPct}% sin cobertura`,
-      subtitle: `Incluye un ${pamiPct}% con PAMI`,
+      value: `${sinCoberturaPct}%`,
+      subtitle: `${sinCoberturaCount} personas · ${pamiPct}% con PAMI`,
       icon: Stethoscope,
       color: sinCoberturaPct >= 40 ? 'red' as const : 'violet' as const,
     },
     {
       title: 'Informal / desempleado',
-      value: `${precarizadosPct}% informal + desempleado`,
+      value: `${precarizadosPct}%`,
       subtitle: `Solo ${dependenciaPct}% en relación de dependencia`,
       icon: Briefcase,
       color: 'amber' as const,
     },
     {
-      title: 'Situación laboral top',
-      value: (stats.por_situacion_laboral || [])[0]?.name ?? '—',
-      subtitle: `${(stats.por_situacion_laboral || [])[0]?.pct ?? 0}% de los registrados`,
-      icon: Briefcase,
-      color: 'blue' as const,
-    },
-    {
       title: 'Top impedimento',
       value: topImpName,
-      subtitle: `${llegaBienPct}% llega a fin de mes sin problemas`,
+      subtitle: topImpName === 'Llego a fin de mes sin problemas'
+        ? `${llegaBienPct}% llega bien`
+        : `${topImpPct}% lo señala`,
       icon: AlertTriangle,
       color: 'cyan' as const,
     },
