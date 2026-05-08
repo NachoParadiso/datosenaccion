@@ -35,7 +35,7 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = '
       whileHover={onClick ? { scale: 1.02, y: -2 } : {}}
       onClick={onClick}
       className={clsx(
-        'rounded-2xl p-6 shadow-2xl flex items-center gap-4 select-none',
+        'h-[160px] rounded-2xl p-6 shadow-lg shadow-gray-500 flex items-center gap-5 select-none',
         t.bg, t.text,
         onClick && 'cursor-pointer'
       )}
@@ -52,6 +52,7 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = '
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="text-3xl font-black leading-tight mt-1 break-words"
+          title={String(value)}
         >
           {value}
         </motion.p>

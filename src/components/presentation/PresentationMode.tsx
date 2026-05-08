@@ -30,19 +30,19 @@ export default function PresentationMode() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-[#fff] z-50 overflow-auto"
+      className="fixed inset-0 bg-gray-100 z-50 overflow-auto"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-4 border-b border-blue-700">
         <div className="flex items-center gap-3">
-          <Activity size={28} className="text-blue-700" />
+          <Activity size={28} className="text-blue-800" />
           <div>
-            <h1 className="text-2xl font-black text-white">UBA en Acción</h1>
-            <p className="text-blue-300 text-sm">Monitoreo en vivo del operativo - {total} encuestados - {promedioHora} promedio / hora</p>
+            <h1 className="text-2xl font-black text-blue-800">UBA en Acción</h1>
+            <p className="text-blue-500 text-sm">Monitoreo en vivo del operativo - {total} encuestados - {promedioHora} promedio / hora</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <LastUpdateBadge status={status} lastUpdate={lastUpdate} usingMock={usingMock} />
+          <LastUpdateBadge status={status} lastUpdate={lastUpdate} usingMock={usingMock}/>
           <button onClick={refresh} className="p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white">
             <RefreshCw size={16} className={status === 'loading' ? 'animate-spin' : ''} />
           </button>
@@ -73,20 +73,20 @@ export default function PresentationMode() {
         {/* 3-column layout by theme */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Social column */}
-          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-            <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Social</h4>
+          <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+            <h4 className="text-blue-900 font-bold uppercase tracking-wider mb-4 text-center">Social</h4>
             <SituacionLaboralChart data={stats.por_situacion_laboral} />
           </div>
 
           {/* Economic column */}
-          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-            <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Económica</h4>
+          <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+            <h4 className="text-blue-900 font-bold uppercase tracking-wider mb-4 text-center">Económica</h4>
             <ImpedimentosChart data={stats.top_impedimentos} />
           </div>
 
           {/* Political/Urgent column */}
-          <div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-            <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Política / Urgente</h4>
+          <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+            <h4 className="text-blue-900 font-bold uppercase tracking-wider mb-4 text-center">Política / Urgente</h4>
             <UrgenciasChart data={stats.top_urgencias} />
           </div>
         </div>
@@ -98,8 +98,8 @@ export default function PresentationMode() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white/10 backdrop-blur rounded-3xl p-6"
           >
-            <h3 className="text-white text-lg font-bold mb-4">Vista Interna (Solo visible después del login)</h3>
-            <p className="text-blue-200 text-sm">Aquí irían los gráficos y datos adicionales para el equipo interno.</p>
+            <h3 className="text-black text-lg font-bold mb-4">Vista Interna (Solo visible después del login)</h3>
+            <p className="text-blue-900 text-sm">Aquí irían los gráficos y datos adicionales para el equipo interno.</p>
           </motion.div>
         )}
       </div>
