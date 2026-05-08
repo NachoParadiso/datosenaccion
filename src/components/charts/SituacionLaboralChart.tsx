@@ -41,15 +41,15 @@ export default function SituacionLaboralChart({ data: raw }: Props) {
       <p className="text-xs text-slate-500 mb-3">{insight}</p>
       <ResponsiveContainer width="100%" height={Math.max(220, data.length * 42 + 40)}>
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 60, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 10, fill: '#94A3B8' }} allowDecimals={false} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#334155', fontWeight: 500 }} width={160} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#c2c2c2" horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 11, fill: '#050000' }} allowDecimals={false} />
+          <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: '#2c3036', fontWeight: 700 }} width={160} />
           <Tooltip
             formatter={(v: number) => [`${v} personas (${total ? Math.round(v / total * 100) : 0}%)`, 'cantidad']}
             contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
           />
-          <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={28} label={{ position: 'right', formatter: (v: number) => `${v} (${total ? Math.round(v / total * 100) : 0}%)`, style: { fontSize: 11, fill: '#334155', fontWeight: 600 } }}>
-            {data.map((_, i) => <Cell key={i} fill={i === 0 ? '#f59e0b' : '#3b82f6'} />)}
+          <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={28} label={{ position: 'right', formatter: (v: number) => `${v} (${total ? Math.round(v / total * 100) : 0}%)`, style: { fontSize: 11, fill: '#202a38', fontWeight: 700 } }}>
+            {data.map((_, i) => <Cell key={i} fill={i === 0 ? '#35d300' : '#3b82f6'} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>

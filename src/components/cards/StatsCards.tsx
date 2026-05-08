@@ -69,7 +69,7 @@ export default function StatsCards() {
   ];
 
   return (
-    <div className="flex flex-wrap gap-6 justify-center sm:justify-start">
+    <div className="flex flex-wrap gap-6 justify-center">
       {cards.map((c, i) => (
         <div key={c.title} className="w-full sm:w-auto sm:min-w-[280px] sm:max-w-[340px]">
           <StatCard {...c} index={i} />
