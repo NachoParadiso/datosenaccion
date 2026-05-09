@@ -9,7 +9,7 @@ import OriginChart from '../components/charts/OriginChart';
 import RangoEtarioChart from '../components/charts/RangoEtarioChart';
 import CoverageChart from '../components/charts/CoverageChart';
 import ImpedimentosChart from '../components/charts/ImpedimentosChart';
-import UrgenciasChart from '../components/charts/UrgenciasChart';
+import UrgenciasRanking from '../components/charts/UrgenciasRanking';
 import RecordsTable from '../components/table/RecordsTable';
 
 const section = {
@@ -56,7 +56,7 @@ export default function DashboardHome() {
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             <motion.div {...section} transition={{ delay: 0.25 }} className="card">
-              <UrgenciasChart data={stats.top_urgencias} />
+              <UrgenciasRanking data={stats.top_urgencias} />
             </motion.div>
           </div>
         </>
@@ -75,7 +75,7 @@ export default function DashboardHome() {
               <SituacionLaboralChart data={stats.por_situacion_laboral} />
             </motion.div>
             <motion.div {...section} transition={{ delay: 0.2 }} className="card">
-              <TimeSeriesChart data={stats.por_hora} />
+              <UrgenciasRanking data={stats.top_urgencias} />
             </motion.div>
           </div>
 
@@ -98,7 +98,7 @@ export default function DashboardHome() {
               <ImpedimentosChart data={stats.top_impedimentos} />
             </motion.div>
             <motion.div {...section} transition={{ delay: 0.30 }} className="card">
-              <UrgenciasChart data={stats.top_urgencias} />
+              <UrgenciasRanking data={stats.top_urgencias} />
             </motion.div>
           </div>
 

@@ -10,47 +10,32 @@ export default function ImpedimentosChart({ data: raw }: Props) {
 
   const total = raw.reduce((s, d) => s + d.value, 0);
   const data = [...raw].sort((a, b) => b.value - a.value);
-
-  const withPct = data.map(item => ({
-    ...item,
-    pct: Math.round((item.value / total) * 100)
-  }));
-
-  const superlativos = withPct.filter(item => item.pct >= SUPERLATIVO);
+  const predominantes = data.filter(d => (d.pct ?? 0) >= SUPERLATIVO);
 
   let insight = '';
-  if (superlativos.length === 0) {
-    const pcts = withPct.map(item => item.pct);
-    const range = Math.max(...pcts) - Math.min(...pcts);
-    if (range < 10) {
-      insight = 'Sin impedimento claro: todo acapara casi lo mismo';
-    } else {
-      const topItem = withPct[0];
-      insight = `Principal obstáculo: "${topItem.name}" (${topItem.pct}%)`;
-    }
-  } else if (superlativos.length === 1) {
-    insight = `Predominancia de "${superlativos[0].name}"`;
+  if (predominantes.length === 0) {
+    insight = 'Sin impedimento predominante (todas < 25%)';
+  } else if (predominantes.length === 1) {
+    insight = `Predominante: "${predominantes[0].name}" (${predominantes[0].pct}%)`;
   } else {
-    const nombres = superlativos.map(s => s.name).join(', ');
-    insight = `${nombres} predominan`;
+    insight = `Predominantes: ${predominantes.map(p => p.name).join(', ')}`;
   }
 
   return (
     <div>
       <h3 className="font-semibold text-slate-700 text-sm mb-1">Impedimentos para llegar a fin de mes</h3>
-      <p className="text-xs text-slate-500 mb-3">{insight}</p>
-      <ResponsiveContainer width="100%" height={Math.max(240, data.length * 38 + 40)}>
-        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 65, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#c2c2c2" horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 11, fill: '#050000' }} allowDecimals={false} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: '#2c3036', fontWeight: 700 }} width={180} />
+<p className="text-xs text-slate-500 mb-6">{insight}</p>
+      <ResponsiveContainer width="100%" height={Math.max(220, data.length * 32 + 50)}>
+        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 55, left: 0, bottom: 20 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 10, fill: '#64748B' }} allowDecimals={false} label={{ value: 'Cantidad de gente que respondió', position: 'insideBottom', offset: -10, fontSize: 11, fill: '#475569', fontWeight: 600 }} />
+          <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#334155', fontWeight: 500 }} width={160} />
           <Tooltip
-            formatter={(v: number) => [`${v} personas (${total ? Math.round(v / total * 100) : 0}%)`, 'Frecuencia']}
+            formatter={(v: number) => [`${v} (${total ? Math.round(v / total * 100) : 0}%)`, 'Frecuencia']}
             contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
-            labelStyle={{ fontWeight: 600, marginBottom: 4 }}
           />
-          <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={24} label={{ position: 'right', formatter: (v: number) => `${v} (${total ? Math.round(v / total * 100) : 0}%)`, style: { fontSize: 11, fill: '#202a38', fontWeight: 700 } }}>
-            {data.map((_, i) => <Cell key={i} fill={i === 0 ? '#35d300' : '#3b82f6'} />)}
+<Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20} label={{ position: 'right', formatter: (v: number) => `${v}`, style: { fontSize: 10, fill: '#334155', fontWeight: 600 } }}>
+            {data.map((_, i) => <Cell key={i} fill={i === 0 ? '#f59e0b' : '#6366f1'} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>

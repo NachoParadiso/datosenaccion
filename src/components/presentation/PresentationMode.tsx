@@ -5,7 +5,7 @@ import { useData } from '../../context/DataContext';
 import StatsCards from '../cards/StatsCards';
 import SituacionLaboralChart from '../charts/SituacionLaboralChart';
 import ImpedimentosChart from '../charts/ImpedimentosChart';
-import UrgenciasChart from '../charts/UrgenciasChart';
+import UrgenciasRanking from '../charts/UrgenciasRanking';
 import LastUpdateBadge from '../common/LastUpdateBadge';
 import LoginModal from '../common/LoginModal';
 
@@ -85,9 +85,9 @@ export default function PresentationMode() {
           </div>
 
           {/* Political/Urgent column */}
-          <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
-            <h4 className="text-blue-900 font-bold uppercase tracking-wider mb-4 text-center">Política / Urgente</h4>
-            <UrgenciasChart data={stats.top_urgencias} />
+<div className="bg-white/10 backdrop-blur rounded-3xl p-6">
+            <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Política / Urgente</h4>
+            <UrgenciasRanking data={stats.top_urgencias} />
           </div>
         </div>
 
