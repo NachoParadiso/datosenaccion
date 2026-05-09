@@ -34,15 +34,9 @@ export default function StatsCards() {
   )?.value ?? 0;
   const dependenciaPct = total > 0 ? Math.round((dependencia / total) * 100) : 0;
 
-  const topImp = (stats.top_impedimentos || [])[0];
-  const topImpName = topImp?.name ?? '—';
-  const topImpPct = topImp?.pct ?? 0;
-
-  const llegaBienItem = (stats.top_impedimentos || []).find(i =>
-    i.name === 'Llego a fin de mes sin problemas'
-  );
-  const llegaBienValue = llegaBienItem?.value ?? 0;
-  const llegaBienPct = total > 0 ? Math.round((llegaBienValue / total) * 100) : 0;
+  const topUrg = (stats.top_urgencias || [])[0];
+  const topUrgName = topUrg?.name ?? '—';
+  const topUrgPct = topUrg?.pct ?? 0;
 
   const cards = [
     {
@@ -53,16 +47,16 @@ export default function StatsCards() {
       color: sinCoberturaPct >= 40 ? 'red' as const : 'violet' as const,
     },
     {
-      title: 'Informal / desempregado',
+      title: 'Informal / desempleado',
       value: `${precarizadosPct}%`,
       subtitle: `Solo ${dependenciaPct}% en relación de dependencia`,
       icon: Briefcase,
       color: 'amber' as const,
     },
     {
-      title: 'Top impedimento',
-      value: topImpName,
-      subtitle: undefined,
+      title: 'Principal urgencia',
+      value: topUrgName,
+      subtitle: topUrgPct > 0 ? `${topUrgPct}% de menciones` : undefined,
       icon: AlertTriangle,
       color: 'cyan' as const,
     },
