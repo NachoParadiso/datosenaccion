@@ -15,7 +15,7 @@ const FILTROS_DEFAULT: Filtros = {
   search: '',
 };
 
-const INTERNAL_PASSWORD = 'uba2026';
+const INTERNAL_PASSWORD = import.meta.env.VITE_INTERNAL_PASSWORD ?? '';
 
 interface DataContextValue {
   rawData: Registro[];

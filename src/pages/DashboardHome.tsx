@@ -7,7 +7,8 @@ import SituacionLaboralChart from '../components/charts/SituacionLaboralChart';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
 import OriginChart from '../components/charts/OriginChart';
 import RangoEtarioChart from '../components/charts/RangoEtarioChart';
-import CoverageChart from '../components/charts/CoverageChart';
+import AgeDistributionChart from '../components/charts/AgeDistributionChart';
+import CoverageDonutChart from '../components/charts/CoverageDonutChart';
 import ImpedimentosChart from '../components/charts/ImpedimentosChart';
 import UrgenciasRanking from '../components/charts/UrgenciasRanking';
 import RecordsTable from '../components/table/RecordsTable';
@@ -69,7 +70,12 @@ export default function DashboardHome() {
             <FiltersBar />
           </motion.div>
 
-          {/* Row 1: Situación Laboral + Time Series */}
+          {/* Time series full width */}
+          <motion.div {...section} transition={{ delay: 0.12 }} className="card">
+            <TimeSeriesChart data={stats.por_hora} />
+          </motion.div>
+
+          {/* Row 1: Situación Laboral + Urgencias */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             <motion.div {...section} transition={{ delay: 0.15 }} className="card">
               <SituacionLaboralChart data={stats.por_situacion_laboral} />
@@ -79,25 +85,32 @@ export default function DashboardHome() {
             </motion.div>
           </div>
 
-          {/* Row 2: Residencia + Rango Etario + Cobertura */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {/* Row 2: Rango Etario + Age Distribution (comparativa) */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             <motion.div {...section} transition={{ delay: 0.22 }} className="card">
-              <OriginChart data={stats.por_residencia} />
-            </motion.div>
-            <motion.div {...section} transition={{ delay: 0.24 }} className="card">
               <RangoEtarioChart data={stats.por_rango_etario} />
             </motion.div>
-            <motion.div {...section} transition={{ delay: 0.26 }} className="card">
-              <CoverageChart data={stats.por_cobertura} />
+            <motion.div {...section} transition={{ delay: 0.24 }} className="card">
+              <AgeDistributionChart data={stats.por_rango_etario} />
             </motion.div>
           </div>
 
-          {/* Row 3: Impedimentos + Urgencias */}
+          {/* Row 3: Residencia (donut) + Cobertura (donut) */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <motion.div {...section} transition={{ delay: 0.26 }} className="card">
+              <OriginChart data={stats.por_residencia} title="¿Dónde vivís?" />
+            </motion.div>
             <motion.div {...section} transition={{ delay: 0.28 }} className="card">
+              <CoverageDonutChart data={stats.por_cobertura} />
+            </motion.div>
+          </div>
+
+          {/* Row 4: Impedimentos + Urgencias */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <motion.div {...section} transition={{ delay: 0.30 }} className="card">
               <ImpedimentosChart data={stats.top_impedimentos} />
             </motion.div>
-            <motion.div {...section} transition={{ delay: 0.30 }} className="card">
+            <motion.div {...section} transition={{ delay: 0.32 }} className="card">
               <UrgenciasRanking data={stats.top_urgencias} />
             </motion.div>
           </div>

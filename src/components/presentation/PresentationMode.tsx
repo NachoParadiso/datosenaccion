@@ -6,6 +6,11 @@ import StatsCards from '../cards/StatsCards';
 import SituacionLaboralChart from '../charts/SituacionLaboralChart';
 import ImpedimentosChart from '../charts/ImpedimentosChart';
 import UrgenciasRanking from '../charts/UrgenciasRanking';
+import TimeSeriesChart from '../charts/TimeSeriesChart';
+import OriginChart from '../charts/OriginChart';
+import RangoEtarioChart from '../charts/RangoEtarioChart';
+import AgeDistributionChart from '../charts/AgeDistributionChart';
+import CoverageDonutChart from '../charts/CoverageDonutChart';
 import LastUpdateBadge from '../common/LastUpdateBadge';
 import LoginModal from '../common/LoginModal';
 
@@ -85,8 +90,8 @@ export default function PresentationMode() {
           </div>
 
           {/* Political/Urgent column */}
-<div className="bg-white/10 backdrop-blur rounded-3xl p-6">
-            <h4 className="text-white/70 text-xs font-medium uppercase tracking-wider mb-4">Política / Urgente</h4>
+<div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+            <h4 className="text-blue-900 font-bold uppercase tracking-wider mb-4 text-center">Política / Urgente</h4>
             <UrgenciasRanking data={stats.top_urgencias} />
           </div>
         </div>
@@ -96,10 +101,34 @@ export default function PresentationMode() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/10 backdrop-blur rounded-3xl p-6"
+            className="space-y-6"
           >
-            <h3 className="text-black text-lg font-bold mb-4">Vista Interna (Solo visible después del login)</h3>
-            <p className="text-blue-900 text-sm">Aquí irían los gráficos y datos adicionales para el equipo interno.</p>
+            <h3 className="text-blue-900 text-lg font-bold">Dashboard Interno</h3>
+
+            {/* Time series full width */}
+            <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+              <TimeSeriesChart data={stats.por_hora} />
+            </div>
+
+            {/* Row 1: Rango Etario + Age Distribution */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+                <RangoEtarioChart data={stats.por_rango_etario} />
+              </div>
+              <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+                <AgeDistributionChart data={stats.por_rango_etario} />
+              </div>
+            </div>
+
+            {/* Row 2: Residencia + Cobertura */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+                <OriginChart data={stats.por_residencia} title="¿Dónde vivís?" />
+              </div>
+              <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
+                <CoverageDonutChart data={stats.por_cobertura} />
+              </div>
+            </div>
           </motion.div>
         )}
       </div>
