@@ -1,138 +1,171 @@
-# UBA en Acción — Dashboard en vivo
+<div align="center">
 
-Dashboard web para monitorear en tiempo real el operativo UBA en Acción, conectado a Google Forms → Google Sheets.
+# Datos en Acción
+
+### Dashboard de Monitoreo Sociolaboral en Tiempo Real
+
+**Pipeline ETL Live · Visual Analytics · Segmentación Multidimensional**
+
+![React](https://img.shields.io/badge/React-18-087ea4?style=flat-square&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?style=flat-square&logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3fcf8e?style=flat-square&logo=supabase)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?style=flat-square&logo=tailwindcss)
+![Recharts](https://img.shields.io/badge/Recharts-2-ff6b6b?style=flat-square)
+
+</div>
 
 ---
 
-## Cómo correrlo
+## Resumen Ejecutivo
+
+Datos en Acción es un **sistema de captura, procesamiento y visualización en vivo** de datos de encuesta sociolaboral. Diseñado para la **gestión pública basada en evidencia**, convierte respuestas de formulario en un tablero analítico interactivo con actualización cada **10 segundos** — sin recarga manual, sin intervención técnica.
+
+El pipeline completo (Formulario → Base de Datos → Dashboard) opera bajo un principio de **seguridad por diseño**: sin SQL embebido en el frontend, todo el acceso a datos canalizado mediante **stored procedures** (RPCs) con `SECURITY DEFINER`.
+
+> **Propósito**: Dotar a equipos de gestión de una herramienta de **Business Intelligence en tiempo real** para el monitoreo continuo de indicadores sociolaborales en territorio.
+
+---
+
+## Capacidades Analíticas
+
+### ⚡ Live ETL Pipeline
+Los datos fluyen desde el formulario hasta las visualizaciones en menos de **10 segundos** mediante polling reactivo. Sin procesos batch, sin latencia.
+
+### 🔍 Visual Analytics Layer
+**8 visualizaciones interactivas** sobre Recharts con tooltips, rankings, y detección automática de patrones predominantes (superlativo al 25%).
+
+### 🎯 Segmentación en Vivo
+Filtros combinables multi-dimensión: situación laboral, residencia, cobertura médica, rango etario, localidad, rango horario + búsqueda textual.
+
+### 📊 Dual View Mode
+- **Vista Pública**: 3 KPIs estratégicos + 3 gráficos de alto nivel
+- **Vista Interna**: Dashboard completo con 8 gráficos, tabla de registros, exportación y filtros
+
+### 🖥️ Presentation Mode
+Pantalla completa optimizada para **reporting en vivo** en reuniones directivas. Toggle entre vista pública e interna sin salir de la proyección.
+
+### 🔒 Data Governance
+- DNI enmascarado automáticamente
+- Row Level Security en base de datos
+- Sin credenciales en frontend (solo anon key via Supabase)
+- Todo acceso canalizado vía RPCs
+
+### 📥 Exportación Analítica
+Descarga CSV con dos modos: **registros filtrados** (con datos enmascarados) y **resumen estadístico** con métricas agregadas.
+
+### ⚠️ Alertas Inteligentes
+Detección automática de patrones: cobertura baja (< 40%), impedimentos predominantes (> 50%), basada en umbrales configurables.
+
+---
+
+## Stack Tecnológico
+
+| Capa | Tecnología | Propósito |
+|------|-----------|-----------|
+| Frontend | React 18 + TypeScript | UI reactiva, tipado estático |
+| Build | Vite 5 | Dev server + build optimizado |
+| Estilos | Tailwind CSS 3 | Utility-first, responsive |
+| Visualización | Recharts 2 | 8 tipos de gráficos interactivos |
+| Animación | Framer Motion 11 | Transiciones fluidas |
+| Backend | Supabase (PostgreSQL) | Base de datos+API+RPC |
+| DB Schema | 3 schemas (lookup, encuesta, rel) | Datos normalizados + catálogos |
+| Iconos | Lucide React | Sistema de iconos unificado |
+
+---
+
+## Arquitectura del Pipeline
+
+```
+Google Forms / API
+       ↓
+   Supabase PostgreSQL
+   ├── lookup schema (catálogos)
+   ├── encuesta.registros (datos maestros)
+   ├── rel.* (relaciones M:N)
+   └── RPCs (stored procedures)
+       ↓
+   supabaseService.ts (capa única de acceso)
+       ↓
+   useSupabaseData hook (polling cada 10s)
+       ↓
+   DataContext (estado global + filtros)
+       ↓
+   Dashboard React (3 modos de visualización)
+```
+
+**Principios**:
+- **Sin SQL embebido**: todo el acceso a datos via `schema.rpc()` 
+- **SECURITY DEFINER**: los procedures corren con permisos elevados, el frontend con el mínimo necesario
+- **Snapshots aislados**: todas las lecturas son `STABLE`, sin bloqueos
+
+---
+
+## Quick Start
 
 ```bash
-cd uba-en-accion-dashboard
+git clone <repo-url>
+cd datos-en-accion
 npm install
-npm run dev
-# Abrí: http://localhost:5173
+cp .env.example .env.local  # configurar credenciales Supabase
+npm run dev                  # → http://localhost:5173
 ```
 
-Sin configurar la URL de Google Sheets, el dashboard funciona con **90 registros de prueba** automáticamente.
+Sin configuración de Supabase, reemplazar por variables en `.env.local`:
 
----
-
-## Cómo conectar Google Forms + Google Sheets
-
-### ESCENARIO A: Ya tenés un Google Forms armado
-
-**Paso 1:** Abrí la Google Sheet que recibe las respuestas de tu formulario.
-
-**Paso 2:** `Archivo → Compartir → Publicar en la web`
-
-**Paso 3:** En el menú desplegable de hojas, seleccioná la hoja correcta (por defecto "Respuestas de formulario 1"). En formato, elegí **"Valores separados por comas (.csv)"**.
-
-**Paso 4:** Hacé clic en **Publicar** y confirmá. Copiá la URL que aparece.
-
-**Paso 5:** En el dashboard, hacé clic en el ícono ⚙ del header → pegá la URL → "Guardar y conectar".
-
-O alternativamente, creá un archivo `.env.local` en la raíz del proyecto:
-```bash
-VITE_GOOGLE_SHEETS_CSV_URL=https://docs.google.com/spreadsheets/d/TU_ID/pub?output=csv
+```env
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu_anon_key
+VITE_INTERNAL_PASSWORD=clave_interna     # opcional
+VITE_REFRESH_INTERVAL=10000              # default 10s
 ```
 
 ---
 
-### ESCENARIO B: Todavía no tenés el Google Forms
+## Modos de Visualización
 
-**Estructura recomendada del formulario:**
+### 👁️ Vista Pública (default)
+Tres indicadores estratégicos + tres gráficos: situación laboral, impedimentos y urgencias de gobierno. Ideal para **pantallas en espacios compartidos** o vistas ejecutivas rápidas.
 
-| # | Campo | Tipo | Obligatorio |
-|---|-------|------|-------------|
-| 1 | Nombre completo | Respuesta corta | Sí |
-| 2 | DNI | Respuesta corta (validar: número, 7-8 dígitos) | Sí |
-| 3 | Teléfono | Respuesta corta | Sí (aclarar: "sin teléfono" si no tiene) |
-| 4 | Procedencia | Opción múltiple: CABA / Provincia de Buenos Aires / Otra provincia / Otro país | Sí |
-| 5 | Localidad / barrio | Respuesta corta | Sí |
-| 6 | ¿Está en situación de calle? | Opción múltiple: Sí / No / Prefiere no responder | Sí |
-| 7 | Especialidad | Lista desplegable: Odontología / Clínica médica / Pediatría / Ginecología / Salud mental / Enfermería / Oftalmología / Nutrición / Trabajo social / Vacunación / Otra | Sí |
-| 8 | Motivo de consulta breve | Párrafo | No |
-| 9 | Edad | Respuesta corta (validar: número) | Sí |
-| 10 | Género | Opción múltiple: Femenino / Masculino / No binario / Prefiere no responder / Otro | No |
-| 11 | ¿Tiene cobertura médica / obra social? | Opción múltiple: Sí / No / No sabe / no responde | No |
-| 12 | ¿Atendido previamente por UBA en Acción? | Opción múltiple: Sí / No / No sabe | No |
-| 13 | Observaciones internas | Párrafo | No |
+### 🔐 Vista Interna
+Dashboard completo habilitado por password: 8 gráficos, tabla con todos los registros, filtros combinables, búsqueda y exportación analítica.
 
-**Para vincular el formulario a Google Sheets:**
-1. En Google Forms → ícono de hoja de cálculo (Respuestas → Ver en Sheets)
-2. Esto crea automáticamente una Sheet con todas las columnas
-3. Seguí los pasos del Escenario A para publicarla como CSV
+### 🖥️ Modo Presentación
+Pantalla completa para proyector. Incluye layout de 3 columnas por eje temático (Social / Económica / Política) + toggle interno.
 
 ---
 
-## Archivo de configuración
+## Visualizaciones Incluidas
 
-```bash
-# .env.local  (crearlo en la raíz del proyecto)
-VITE_GOOGLE_SHEETS_CSV_URL=https://docs.google.com/spreadsheets/d/TU_ID/pub?output=csv
-VITE_REFRESH_INTERVAL=10000   # milisegundos (default: 10 segundos)
-```
-
----
-
-## Estructura del proyecto
-
-```
-src/
-├── components/
-│   ├── layout/       Header.tsx
-│   ├── common/       LastUpdateBadge, AlertBanner, ConfigModal
-│   ├── cards/        StatCard, StatsCards
-│   ├── charts/       Specialty, TimeSeries, Origin, StreetSituation,
-│   │                 AgeDistribution, Coverage, Gender, Neighborhood
-│   ├── filters/      FiltersBar (búsqueda + filtros combinables)
-│   ├── table/        RecordsTable (con modal de detalle)
-│   ├── specialty/    SpecialtyDetail (vista de detalle por especialidad)
-│   └── presentation/ PresentationMode (pantalla grande / proyector)
-├── pages/            DashboardHome
-├── context/          DataContext (estado global + filtros)
-├── hooks/            useSheetData (fetch CSV + polling)
-├── utils/            normalize, statistics, csvParser, export
-├── data/             mockData (90 registros de prueba)
-└── types/            index.ts
-```
+| Visualización | Tipo | Insight Clave |
+|--------------|------|---------------|
+| Situación Laboral | Donut con etiquetas | Predominancia (umbral 25%) |
+| Impedimentos Fin de Mes | Barras horizontales | Ranking + umbral superlativo |
+| Urgencias Gobierno | Ranking con barras | Top 3 + scores |
+| Evolución Horaria | Área con línea de ahora | Pico horario + tendencia |
+| Rango Etario | Barras agrupadas | Distribución demográfica |
+| Distribución por Edad | Barras secuenciales | Pirámide de edades |
+| Residencia | Donut segmentado | CABA / Conurbano / Otras provincias |
+| Cobertura Médica | Donut con colores | % sin cobertura |
 
 ---
 
-## Funcionalidades incluidas
+## Casos de Uso
 
-- **Dashboard en vivo** con 7 KPI cards y auto-refresh configurable
-- **8 gráficos**: barras, área, torta, dona, barras horizontales
-- **Vista detallada por especialidad** — clic en cualquier barra del gráfico
-- **Filtros combinables**: especialidad, procedencia, situación de calle, cobertura, género, localidad, rango horario
-- **Buscador** por nombre, DNI, teléfono, localidad, especialidad
-- **Tabla de registros** con DNI enmascarado y modal de detalle completo
-- **Alertas automáticas**: alta demanda y situación de calle
-- **Modo presentación** — pantalla completa para proyectar (ESC para salir)
-- **Exportación**: CSV de registros filtrados + CSV de resumen estadístico
-- **Datos de prueba**: 90 registros realistas cuando no hay URL configurada
-- **Animaciones** con Framer Motion en toda la UI
-- **Responsive**: celular, tablet, notebook, pantalla grande
-- **Modal de configuración** para cambiar la URL sin tocar código
+- **📋 Monitoreo de Gestión**: seguimiento continuo de indicadores sociolaborales durante operativos territoriales
+- **📊 Reporting en Vivo**: proyección en reuniones directivas con datos actualizados al minuto
+- **🔍 Análisis de Políticas Públicas**: segmentación de población por dimensión (laboral, cobertura, residencia, etaria) para detección de patrones y brechas
+- **📈 Evaluación de Impacto**: línea de base temporal con evolución horaria y alertas automáticas de indicadores críticos
+- **📁 Data Audit Trail**: exportación de registros para análisis externo con herramientas de BI
 
 ---
 
-## Comandos
+## Contexto del Proyecto
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run dev` | Servidor de desarrollo → http://localhost:5173 |
-| `npm run build` | Compilar para producción (genera /dist) |
-| `npm run preview` | Preview del build de producción |
+Desarrollado para la **Secretaría de Bienestar — Universidad de Buenos Aires**. Encuesta continua de caracterización sociolaboral aplicada durante operativos territoriales. Más de 90 registros de prueba incluidos para demostración sin conexión a base de datos.
 
 ---
 
-## Mejoras futuras posibles
+## Licencia
 
-- Login con Google para proteger el acceso
-- Descarga de imagen del dashboard (html2canvas)
-- Exportación a Excel con múltiples hojas
-- Modo oscuro
-- Backend Node/Express con Google Sheets API v4 para mayor seguridad
-- Notificaciones push cuando hay alta demanda
-- Comparación entre franjas horarias
+Uso interno — Universidad de Buenos Aires.
