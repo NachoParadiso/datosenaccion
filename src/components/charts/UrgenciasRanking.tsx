@@ -31,7 +31,8 @@ export default function UrgenciasRanking({ data: raw }: Props) {
         {sorted.map((item, idx) => {
           const pct = item.pct ?? Math.round((item.value / total) * 100);
           const isPodium = idx < PODIUM;
-          const barWidth = Math.max(100 - (idx * 12), 15);
+          const topPct = sorted[0].pct ?? Math.round((sorted[0].value / total) * 100) ?? 1;
+          const barWidth = Math.max((pct / (topPct || 1)) * 100, 5);
 
           return (
             <div key={item.name}>
