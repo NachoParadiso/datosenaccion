@@ -47,12 +47,12 @@ export default function SituacionLaboralChart({ data }: Props) {
     <div>
 <h3 className="font-semibold text-slate-700 text-sm mb-2">Situación Laboral</h3>
       <p className="text-xs text-slate-500 mb-4">{insight}</p>
-      <ResponsiveContainer width="100%" height={320}>
-        <PieChart>
+      <ResponsiveContainer width="100%" height={340}>
+        <PieChart margin={{ top: 12, right: 0, bottom: 0, left: 0 }}>
           <Pie
             data={data}
             cx="50%"
-            cy="50%"
+            cy="42%"
             innerRadius={50}
             outerRadius={85}
             dataKey="value"
@@ -66,7 +66,7 @@ export default function SituacionLaboralChart({ data }: Props) {
             ))}
           </Pie>
           <Tooltip formatter={(v: number, name: string) => [`${v} personas (${Math.round((v / total) * 100)}%)`, name]} contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }} />
-          <Legend wrapperStyle={{ paddingTop: '40px' }} formatter={(v) => <span style={{ fontSize: 11, color: '#64748B' }}>{v}</span>} />
+          <Legend wrapperStyle={{ paddingTop: '8px' }} formatter={(v) => <span style={{ fontSize: 11, color: '#64748B' }}>{v}</span>} />
         </PieChart>
       </ResponsiveContainer>
     </div>
