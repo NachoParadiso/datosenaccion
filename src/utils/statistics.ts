@@ -10,8 +10,10 @@ export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
   const mapKVImp = (arr: Array<{ impedimento: string; cantidad: number }>): KV[] =>
     arr.map((x) => ({ name: x.impedimento, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
 
-  const mapKVUrg = (arr: Array<{ urgencia: string; cantidad: number }>): KV[] =>
-    arr.map((x) => ({ name: x.urgencia, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
+  const mapKVUrg = (arr: Array<{ urgencia: string; cantidad: number }>): KV[] => {
+    const totalUrgSel = arr.reduce((s, x) => s + x.cantidad, 0) || 1;
+    return arr.map((x) => ({ name: x.urgencia, value: x.cantidad, pct: Math.round((x.cantidad / totalUrgSel) * 100) }));
+  };
 
   const por_rango_etario = mapKV(backend.por_rango_etario || []);
   const por_cobertura = mapKV(backend.por_cobertura || []);
