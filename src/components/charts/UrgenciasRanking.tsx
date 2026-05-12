@@ -42,7 +42,7 @@ export default function UrgenciasRanking({ data: raw }: Props) {
                   <span className="ml-1">{item.name}</span>
                 </span>
                 <span className={`text-xs font-bold ${isPodium ? 'text-amber-600' : 'text-slate-500'}`}>
-                  {pct}%
+                  {item.value} {item.value === 1 ? 'voto' : 'votos'}
                 </span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-2">
