@@ -1,6 +1,25 @@
 import { Registro, Estadisticas, KV, HoraEntry, Alerta } from '../types';
 import type { StatsResult } from '../services/supabaseService';
 
+// Hamilton / largest-remainder method: distribute integer percentages so they sum to exactly 100.
+function distribute100(values: number[]): number[] {
+  const sum = values.reduce((s, v) => s + v, 0);
+  if (sum <= 0) return values.map(() => 0);
+  const exact = values.map((v) => (v / sum) * 100);
+  const floored = exact.map(Math.floor);
+  let leftover = 100 - floored.reduce((s, v) => s + v, 0);
+  const order = exact
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  const result = [...floored];
+  for (const { i } of order) {
+    if (leftover <= 0) break;
+    result[i]++;
+    leftover--;
+  }
+  return result;
+}
+
 export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
   const total = backend.total_registros || 0;
 
@@ -8,8 +27,8 @@ export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
     arr.map((x) => ({ name: x.categoria, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
 
   const mapKVImp = (arr: Array<{ impedimento: string; cantidad: number }>): KV[] => {
-    const totalImpSel = arr.reduce((s, x) => s + x.cantidad, 0) || 1;
-    return arr.map((x) => ({ name: x.impedimento, value: x.cantidad, pct: Math.round((x.cantidad / totalImpSel) * 100) }));
+    const pcts = distribute100(arr.map((x) => x.cantidad));
+    return arr.map((x, i) => ({ name: x.impedimento, value: x.cantidad, pct: pcts[i] }));
   };
 
   const mapKVUrg = (arr: Array<{ urgencia: string; cantidad: number }>): KV[] =>
