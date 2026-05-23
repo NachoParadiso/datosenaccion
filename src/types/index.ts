@@ -48,6 +48,7 @@ export interface Estadisticas {
   por_cobertura: KV[];
   por_residencia: KV[];
   por_situacion_laboral: KV[];
+  por_propuestas_barrio: KV[];
   top_impedimentos: KV[];
   top_urgencias: KV[];
   por_hora: HoraEntry[];

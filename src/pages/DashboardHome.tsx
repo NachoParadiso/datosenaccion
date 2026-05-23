@@ -21,6 +21,7 @@ const section = {
 
 export default function DashboardHome() {
   const { stats, filteredData, isInternalView } = useData();
+  console.log("🌟 EL OBJETO STATS COMPLETO:", stats);
 
   if (!stats) {
     return <div className="text-center text-slate-500 py-8">Cargando estadísticas...</div>;
@@ -49,7 +50,7 @@ export default function DashboardHome() {
         <>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             <motion.div {...section} transition={{ delay: 0.15 }} className="card">
-              <SituacionLaboralChart data={stats.por_situacion_laboral} />
+              <SituacionLaboralChart data={stats.por_propuestas_barrio} />
             </motion.div>
             <motion.div {...section} transition={{ delay: 0.2 }} className="card">
               <ImpedimentosChart data={stats.top_impedimentos} />
@@ -78,7 +79,7 @@ export default function DashboardHome() {
           {/* Row 1: Situación Laboral + Urgencias */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             <motion.div {...section} transition={{ delay: 0.15 }} className="card">
-              <SituacionLaboralChart data={stats.por_situacion_laboral} />
+              <SituacionLaboralChart data={stats.por_propuestas_barrio} />
             </motion.div>
             <motion.div {...section} transition={{ delay: 0.2 }} className="card">
               <UrgenciasRanking data={stats.top_urgencias} />

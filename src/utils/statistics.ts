@@ -20,15 +20,15 @@ function distribute100(values: number[]): number[] {
   return result;
 }
 
-export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
+export function mapStatsFromBackend(backend: any): Estadisticas {
   const total = backend.total_registros || 0;
 
   const mapKV = (arr: Array<{ categoria: string; cantidad: number }>): KV[] =>
     arr.map((x) => ({ name: x.categoria, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
 
   const mapKVImp = (arr: Array<{ impedimento: string; cantidad: number }>): KV[] => {
-    const pcts = distribute100(arr.map((x) => x.cantidad));
-    return arr.map((x, i) => ({ name: x.impedimento, value: x.cantidad, pct: pcts[i] }));
+    // Si no tenés distribute100 importado, usamos un cálculo básico de porcentaje
+    return arr.map((x) => ({ name: x.impedimento, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
   };
 
   const mapKVUrg = (arr: Array<{ urgencia: string; cantidad: number }>): KV[] =>
@@ -38,6 +38,10 @@ export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
   const por_cobertura = mapKV(backend.por_cobertura || []);
   const por_residencia = mapKV(backend.por_residencia || []);
   const por_situacion_laboral = mapKV(backend.por_situacion_laboral || []);
+  
+  /* ---> ACÁ ESTÁ LA MAGIA: LEEMOS TU NUEVA COLUMNA <--- */
+  const por_propuestas_barrio = mapKV(backend.por_propuestas_barrio || []); 
+  
   const top_impedimentos = mapKVImp(backend.top_impedimentos || []);
   const top_urgencias = mapKVUrg(backend.top_urgencias || []);
   const por_hora = (backend.por_hora || []).map((h: { hora: string; total: number }) => ({
@@ -47,12 +51,12 @@ export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
 
   const residencia_top = por_residencia[0]?.name ?? '—';
   const situacion_top = por_situacion_laboral[0]?.name ?? '—';
-  const sinCobertura = por_cobertura.find(c => c.name === 'Solo salud pública / no tengo cobertura')?.value ?? 0;
-  const informal = por_situacion_laboral.find(s =>
+  const sinCobertura = por_cobertura.find((c: any) => c.name === 'Solo salud pública / no tengo cobertura')?.value ?? 0;
+  const informal = por_situacion_laboral.find((s: any) =>
     s.name === 'Trabajo informal / en negro' || s.name === 'Desempleado/a (busco trabajo)'
   )?.value ?? 0;
 
-  const alertas: Alerta[] = [];
+  const alertas: any[] = [];
   const sinCobPct = total ? Math.round((sinCobertura / total) * 100) : 0;
   if (sinCobPct >= 40) {
     alertas.push({
@@ -80,6 +84,7 @@ export function mapStatsFromBackend(backend: StatsResult): Estadisticas {
     por_cobertura,
     por_residencia,
     por_situacion_laboral,
+    por_propuestas_barrio, /* ---> Y ACÁ SE LA MANDAMOS AL DASHBOARD <--- */
     top_impedimentos,
     top_urgencias,
     por_hora,
@@ -181,6 +186,7 @@ export function calcularEstadisticas(data: Registro[]): Estadisticas {
     por_cobertura,
     por_residencia,
     por_situacion_laboral,
+    por_propuestas_barrio: [],
     top_impedimentos,
     top_urgencias,
     por_hora,

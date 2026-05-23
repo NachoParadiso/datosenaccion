@@ -16,6 +16,7 @@ import LoginModal from '../common/LoginModal';
 
 export default function PresentationMode() {
   const { stats, status, lastUpdate, usingMock, refresh, isInternalView, loginInternal, logoutInternal } = useData();
+  console.log("🌟 EL OBJETO STATS COMPLETO:", stats);
   const [showLogin, setShowLogin] = useState(false);
 
   const total = stats?.total || 0;
@@ -80,7 +81,7 @@ export default function PresentationMode() {
           {/* Social column */}
           <div className="bg-gray-200 backdrop-blur rounded-3xl p-6 shadow-lg shadow-gray-500">
             <h4 className="text-blue-900 font-bold uppercase tracking-wider mb-4 text-center">Social</h4>
-            <SituacionLaboralChart data={stats.por_situacion_laboral} />
+            <SituacionLaboralChart data={stats.por_propuestas_barrio} />
           </div>
 
           {/* Economic column */}
