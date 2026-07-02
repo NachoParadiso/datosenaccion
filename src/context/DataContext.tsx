@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
-import { Registro, Filtros, Estadisticas, DataStatus } from '../types';
+import { Registro, Filtros, Estadisticas, DataStatus } from '../types/index';
 import { filtrarRegistros } from '../utils/statistics';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 
 const FILTROS_DEFAULT: Filtros = {
   especialidad: '',
   procedencia: '',
-  situacion_calle: '',
+  situacion_calle: '', 
   cobertura_medica: '',
   genero: '',
   hora_desde: 0,
@@ -30,7 +30,7 @@ interface DataContextValue {
   usingMock: boolean;
   customUrl: string;
   saveCustomUrl: (url: string) => void;
-  refresh: () => void;
+  refresh: (id?: string) => void;
   presentationMode: boolean;
   setPresentationMode: (v: boolean) => void;
   isInternalView: boolean;

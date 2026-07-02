@@ -1,7 +1,27 @@
 import { Registro, Estadisticas, KV, HoraEntry, Alerta } from '../types';
 import type { StatsResult } from '../services/supabaseService';
 
-// Hamilton / largest-remainder method: distribute integer percentages so they sum to exactly 100.
+// 1. DICCIONARIOS DE TRADUCCIÓN
+const MAPA_IMPEDIMENTOS: Record<number, string> = {
+  1: 'Supermercado', 2: 'El alquiler', 3: 'Los servicios (luz, gas, agua)', 4: 'El transporte',
+  5: 'La salud y medicamentos', 6: 'La educación / útiles', 7: 'Las deudas o créditos', 8: 'Llego a fin de mes sin problemas'
+};
+
+const MAPA_URGENCIAS: Record<number, string> = {
+  1: 'Inflación y costo de vida', 2: 'Empleo y salarios', 3: 'Salud pública', 4: 'Seguridad',
+  5: 'Educación', 6: 'Vivienda', 7: 'Jubilaciones y pensiones', 8: 'Corrupción e instituciones', 9: 'Pobreza e indigencia'
+};
+
+const MAPA_PROPUESTAS: Record<number, string> = {
+  1: 'Mantenimiento del espacio público (arreglo de calles - limpieza - iluminación y plazas)',
+  2: 'Mayor seguridad y prevención comunitaria',
+  3: 'Operativos de salud gratuitos (chequeos - consultas médicas y medicamentos)',
+  4: 'Asistencia social y alimentaria (apoyo a comedores y merenderos)',
+  5: 'Deporte y recreación (actividades para chicos - jóvenes y adultos)',
+  6: 'Cursos de formación laboral y oficios',
+  7: 'Cultura y educación (talleres - apoyo escolar y eventos artísticos)'
+};
+
 function distribute100(values: number[]): number[] {
   const sum = values.reduce((s, v) => s + v, 0);
   if (sum <= 0) return values.map(() => 0);
@@ -26,24 +46,30 @@ export function mapStatsFromBackend(backend: any): Estadisticas {
   const mapKV = (arr: Array<{ categoria: string; cantidad: number }>): KV[] =>
     arr.map((x) => ({ name: x.categoria, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
 
-  const mapKVImp = (arr: Array<{ impedimento: string; cantidad: number }>): KV[] => {
-    // Si no tenés distribute100 importado, usamos un cálculo básico de porcentaje
-    return arr.map((x) => ({ name: x.impedimento, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
-  };
-
-  const mapKVUrg = (arr: Array<{ urgencia: string; cantidad: number }>): KV[] =>
-    arr.map((x) => ({ name: x.urgencia, value: x.cantidad, pct: Math.round((x.cantidad / (total || 1)) * 100) }));
-
   const por_rango_etario = mapKV(backend.por_rango_etario || []);
   const por_cobertura = mapKV(backend.por_cobertura || []);
   const por_residencia = mapKV(backend.por_residencia || []);
   const por_situacion_laboral = mapKV(backend.por_situacion_laboral || []);
   
-  /* ---> ACÁ ESTÁ LA MAGIA: LEEMOS TU NUEVA COLUMNA <--- */
-  const por_propuestas_barrio = mapKV(backend.por_propuestas_barrio || []); 
+  // Traducción en vuelo si el backend mandó los datos directamente
+  const por_propuestas_barrio = (backend.por_propuestas_barrio || []).map((x: any) => ({
+    name: MAPA_PROPUESTAS[Number(x.categoria)] || x.categoria,
+    value: x.cantidad,
+    pct: Math.round((x.cantidad / (total || 1)) * 100)
+  })).sort((a: any, b: any) => b.value - a.value);
   
-  const top_impedimentos = mapKVImp(backend.top_impedimentos || []);
-  const top_urgencias = mapKVUrg(backend.top_urgencias || []);
+  const top_impedimentos = (backend.top_impedimentos || []).map((x: any) => ({
+    name: MAPA_IMPEDIMENTOS[Number(x.impedimento)] || x.impedimento,
+    value: x.cantidad,
+    pct: Math.round((x.cantidad / (total || 1)) * 100)
+  })).sort((a: any, b: any) => b.value - a.value);
+
+  const top_urgencias = (backend.top_urgencias || []).map((x: any) => ({
+    name: MAPA_URGENCIAS[Number(x.urgencia)] || x.urgencia,
+    value: x.cantidad,
+    pct: Math.round((x.cantidad / (total || 1)) * 100)
+  })).sort((a: any, b: any) => b.value - a.value);
+
   const por_hora = (backend.por_hora || []).map((h: { hora: string; total: number }) => ({
     hora: h.hora,
     total: h.total,
@@ -84,7 +110,7 @@ export function mapStatsFromBackend(backend: any): Estadisticas {
     por_cobertura,
     por_residencia,
     por_situacion_laboral,
-    por_propuestas_barrio, /* ---> Y ACÁ SE LA MANDAMOS AL DASHBOARD <--- */
+    por_propuestas_barrio,
     top_impedimentos,
     top_urgencias,
     por_hora,
@@ -92,7 +118,6 @@ export function mapStatsFromBackend(backend: any): Estadisticas {
   };
 }
 
-// Fallback para datos mock (no cambia)
 function countBy(data: Registro[], key: keyof Registro): KV[] {
   const counts: Record<string, number> = {};
   data.forEach((r) => {
@@ -105,14 +130,19 @@ function countBy(data: Registro[], key: keyof Registro): KV[] {
     .sort((a, b) => b.value - a.value);
 }
 
-function countMultiSelect(data: Registro[], key: 'impedimentos' | 'urgencias'): KV[] {
+// Lector inteligente de arrays de opciones múltiples
+function countMultiSelect(data: Registro[], key: 'impedimentos' | 'urgencias' | 'propuestas_barrio', mapa: Record<number, string>): KV[] {
   const counts: Record<string, number> = {};
   data.forEach((r) => {
-    const arr = r[key] as string[] | undefined;
+    const arr = (r as any)[key] as any[] | undefined;
     if (arr && Array.isArray(arr)) {
       arr.forEach((item) => {
-        const v = item.trim();
-        if (v) counts[v] = (counts[v] ?? 0) + 1;
+        let id = typeof item === 'object' ? item.value : item;
+        id = Number(id);
+        if (!isNaN(id) && mapa[id]) {
+          const label = mapa[id];
+          counts[label] = (counts[label] ?? 0) + 1;
+        }
       });
     }
   });
@@ -136,7 +166,6 @@ function buildTimeSeries(data: Registro[]): HoraEntry[] {
 
 export function calcularEstadisticas(data: Registro[]): Estadisticas {
   const total = data.length;
-
   const ahora = new Date();
   const hoy = data.filter((r) => {
     if (!r.fecha) return false;
@@ -147,8 +176,12 @@ export function calcularEstadisticas(data: Registro[]): Estadisticas {
   const por_cobertura = countBy(data, 'cobertura');
   const por_residencia = countBy(data, 'residencia');
   const por_situacion_laboral = countBy(data, 'situacion_laboral');
-  const top_impedimentos = countMultiSelect(data, 'impedimentos');
-  const top_urgencias = countMultiSelect(data, 'urgencias');
+  
+  // Usamos el lector local para no depender de la matemática del servidor
+  const top_impedimentos = countMultiSelect(data, 'impedimentos', MAPA_IMPEDIMENTOS);
+  const top_urgencias = countMultiSelect(data, 'urgencias', MAPA_URGENCIAS);
+  const por_propuestas_barrio = countMultiSelect(data, 'propuestas_barrio', MAPA_PROPUESTAS);
+  
   const por_hora = buildTimeSeries(data);
 
   const residencia_top = por_residencia[0]?.name ?? '—';
@@ -186,7 +219,7 @@ export function calcularEstadisticas(data: Registro[]): Estadisticas {
     por_cobertura,
     por_residencia,
     por_situacion_laboral,
-    por_propuestas_barrio: [],
+    por_propuestas_barrio,
     top_impedimentos,
     top_urgencias,
     por_hora,
